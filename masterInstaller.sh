@@ -1,13 +1,14 @@
 #!/bin/bash
-# Puppet Master Install with The Foreman 1.5 on Debian Wheezy 7.5
+# Puppet Master Install with The Foreman on Debian variants
+# Revised by: Claude Durocher
+# Version 1.3.1
+#
+# Fork from this source:
 # Author: John McCarthy
 # <http://www.midactstech.blogspot.com> <https://www.github.com/Midacts>
 # Date: 18th of June, 2014
 # Version 1.3
 #
-# To God only wise, be glory through Jesus Christ forever. Amen.
-# Romans 16:27, I Corinthians 15:1-4
-#---------------------------------------------------------------
 ######## FUNCTIONS ########
 function setHostname()
 {
@@ -17,13 +18,13 @@ function setHostname()
 		FQDN=`hostname -f`
 		echo -e "127.0.0.1	localhost			localhosts.localdomain	$FQDN\n$IP	$FQDN	$Hostname		puppet" > /etc/hosts
 }
-function puppetRepos()
+function puppetRepos($distribution)
 {
 	# Gets the latest puppet repos
 		echo
-		echo -e '\e[01;34m+++ Getting repositories...\e[0m'
-		wget http://apt.puppetlabs.com/puppetlabs-release-wheezy.deb
-		dpkg -i puppetlabs-release-wheezy.deb
+		echo -e '\e[01;34m+++ Getting Puppet repositories for $distribution...\e[0m'
+		wget http://apt.puppetlabs.com/puppetlabs-release-$distribution.deb
+		dpkg -i puppetlabs-release-$distribution.deb
 		apt-get update
 		echo -e '\e[01;37;42mThe Latest Puppet Repos have been acquired!\e[0m'
 }
@@ -43,12 +44,12 @@ function enablePuppet()
 		puppet resource service puppetmaster ensure=running enable=true
 		echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
 }
-function foremanRepos()
+function foremanRepos($distribution)
 {
 	# Gets the latest foreman repos
 		echo
-		echo -e '\e[01;34m+++ Getting repositories...\e[0m'
-		echo "deb http://deb.theforeman.org/ wheezy 1.5" > /etc/apt/sources.list.d/foreman.list
+		echo -e '\e[01;34m+++ Getting Foreman repositories for $distribution...\e[0m'
+		echo "deb http://deb.theforeman.org/ $distribution 1.5" > /etc/apt/sources.list.d/foreman.list
 		echo "deb http://deb.theforeman.org/ plugins 1.5" >> /etc/apt/sources.list.d/foreman.list
 		wget -q http://deb.theforeman.org/pubkey.gpg -O- | apt-key add -
 		apt-get update
@@ -104,7 +105,7 @@ function installForeman()
 		service apache2 restart
 		echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
 }
-function doAll()
+function doAll($distribution)
 {
 	# Calls the setHostname function
 		echo
@@ -119,7 +120,7 @@ function doAll()
 		echo -e "\e[33m=== Get Latest Puppet Repos ? (y/n)\e[0m"
 		read yesno
 		if [ "$yesno" = "y" ]; then
-			puppetRepos
+			puppetRepos($distribution)
 		fi
 
 	# Calls the installPuppet function
@@ -142,7 +143,7 @@ function doAll()
 		echo -e "\e[33m=== Get Latest Foreman Repos ? (y/n)\e[0m"
 		read yesno
 		if [ "$yesno" = "y" ]; then
-			foremanRepos
+			foremanRepos($distribution)
 		fi
 
 	# Calls the installForeman function
@@ -185,6 +186,9 @@ EOZ
 # Check privileges
 	[ $(whoami) == "root" ] || die "You need to run this script as root."
 
+# Check parameter (distribution)
+	[ "$1" == "" ] || die "Please specify distribution (wheezy, trusty, etc)."
+
 # Welcome to the script
 	clear
 	welcome=$(cat << EOA
@@ -203,7 +207,7 @@ EOA
 # Calls the doAll function
 	case "$go" in
 		* )
-			doAll ;;
+			doAll($1) ;;
 	esac
 
 	exit 0
