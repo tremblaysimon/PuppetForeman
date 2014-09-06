@@ -11,191 +11,188 @@
 #  Version 1.3
 #
 ######## FUNCTIONS ########
+#
 function usage() 
 {
-echo -e "\nUsage:\n$0 distribution forman_version \n"
-echo -e "  where distribution is wheeezy, trusty, etc"
-echo -e "  and foreman_version is 1.4, 1.5, etc"
+  echo -e "\nUsage:\n$0 distribution forman_version \n"
+  echo -e "  where distribution is wheeezy, trusty, etc"
+  echo -e "  and foreman_version is 1.4, 1.5, etc"
 } 
 function setHostname()
 {
-# Edits the /etc/hosts file
-IP=`hostname -I`
-Hostname=`hostname`
-FQDN=`hostname -f`
-echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $FQDN $Hostname puppet" > /etc/hosts
+  # Edits the /etc/hosts file
+  IP=`hostname -I`
+  Hostname=`hostname`
+  FQDN=`hostname -f`
+  echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $FQDN $Hostname puppet" > /etc/hosts
 }
 function puppetRepos()
 {
-# Gets the latest puppet repos
-distribution=$1
-echo
-echo -e '\e[01;34m+++ Getting Puppet repositories for $distribution...\e[0m'
-wget http://apt.puppetlabs.com/puppetlabs-release-$distribution.deb
-dpkg -i puppetlabs-release-$distribution.deb
-apt-get update
-echo -e '\e[01;37;42mThe Latest Puppet Repos have been added!\e[0m'
+  # Gets the latest puppet repos
+  distribution=$1
+  echo
+  echo -e '\e[01;34m+++ Getting Puppet repositories for $distribution...\e[0m'
+  wget http://apt.puppetlabs.com/puppetlabs-release-$distribution.deb
+  dpkg -i puppetlabs-release-$distribution.deb
+  apt-get update
+  echo -e '\e[01;37;42mThe Latest Puppet Repos have been added!\e[0m'
 }
 function installPuppet()
 {
-# Installs the latest version of puppetmaster
-echo
-echo -e '\e[01;34m+++ Installing Puppet Master...\e[0m'
-apt-get install puppetmaster -y
-echo -e '\e[01;37;42mThe Puppet Master has been installed!\e[0m'
+  # Installs the latest version of puppetmaster
+  echo
+  echo -e '\e[01;34m+++ Installing Puppet Master...\e[0m'
+  apt-get install puppetmaster -y
+  echo -e '\e[01;37;42mThe Puppet Master has been installed!\e[0m'
 }
 function enablePuppet()
 {
-# Enables the puppetmaster service to be set to ensure it is running
-echo
-echo -e '\e[01;34m+++ Enabling Puppet Master Service...\e[0m'
-puppet resource service puppetmaster ensure=running enable=true
-echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
+  # Enables the puppetmaster service to be set to ensure it is running
+  echo
+  echo -e '\e[01;34m+++ Enabling Puppet Master Service...\e[0m'
+  puppet resource service puppetmaster ensure=running enable=true
+  echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
 }
 function foremanRepos()
 {
-# Gets the latest foreman repos
-distribution=$1
-foreman_version=$2
-echo
-echo -e '\e[01;34m+++ Getting Foreman $foreman_version repositories for $distribution...\e[0m'
-echo "deb http://deb.theforeman.org/ $distribution $foreman_version" > /etc/apt/sources.list.d/foreman.list
-echo "deb http://deb.theforeman.org/ plugins $foreman_version" >> /etc/apt/sources.list.d/foreman.list
-wget -q http://deb.theforeman.org/pubkey.gpg -O- | apt-key add -
-apt-get update
-echo -e '\e[01;37;42mThe Foreman Repos have been added!\e[0m'
+  # Gets the latest foreman repos
+  distribution=$1
+  foreman_version=$2
+  echo
+  echo -e '\e[01;34m+++ Getting Foreman $foreman_version repositories for $distribution...\e[0m'
+  echo "deb http://deb.theforeman.org/ $distribution $foreman_version" > /etc/apt/sources.list.d/foreman.list
+  echo "deb http://deb.theforeman.org/ plugins $foreman_version" >> /etc/apt/sources.list.d/foreman.list
+  wget -q http://deb.theforeman.org/pubkey.gpg -O- | apt-key add -
+  apt-get update
+  echo -e '\e[01;37;42mThe Foreman Repos have been added!\e[0m'
 }
 function installForeman()
 {
 # Downloads the foreman-installer
-echo
-echo -e '\e[01;34m+++ Installing The Foreman...\e[0m'
-apt-get install foreman-installer -y
-echo -e '\e[01;37;42mThe Foreman Installer has been downloaded!\e[0m'
-# Stars foreman-installer
-echo
-echo -e '\e[01;34mInitializing The Foreman Installer...\e[0m'
-echo "-------------------------------------"
-sleep 1
-echo -e '\e[33mMake any additional changes you would like\e[0m'
-sleep 1
-echo -e '\e[33mSelect option "20" and hit ENTER to run the install\e[0m'
-sleep 1
-echo
-echo -e '\e[97mHere\e[0m'
-sleep .5
-echo -e '\e[97mWe\e[0m'
-sleep .5
-echo -e '\e[01;97;42mG O ! ! ! !\e[0m'
-foreman-installer -i -v
-# Sets foreman and foreman-proxy services to start on boot
-sed -i 's/START=no/START=yes/g' /etc/default/foreman
-echo "START=yes" >> /etc/default/foreman-proxy
-# Sets it so you the puppetmaster and puppet services starts on boot
-sed -i 's/START=no/START=yes/g' /etc/default/puppet
-# Makes changes for Puppet 3.6.2 deprecation warning
-#sed -i '0,/\[main\]/s/\[main\]/&\n # Puppet 3.6.2 Modification\n environmentpath=$confdir\/environments\n/g' /etc/puppet/puppet.conf
-#sed -i '/\[development\]/d' /etc/puppet/puppet.conf
-#sed -i '/\[production\]/d' /etc/puppet/puppet.conf
-#sed -i '/modulepath/d' /etc/puppet/puppet.conf
-#sed -i '/config_version/d' /etc/puppet/puppet.conf
-# Restarts the foreman and foreman-proxy services
-service foreman restart
-service foreman-proxy restart
-echo -e '\e[01;37;42mThe Foreman has been installed!\e[0m'
-# Restarts the apache2 service
-echo
-echo -e '\e[01;34m+++ Restarting the apache2 service...\e[0m'
-service apache2 restart
-echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
+  echo
+  echo -e '\e[01;34m+++ Installing The Foreman...\e[0m'
+  apt-get install foreman-installer -y
+  echo -e '\e[01;37;42mThe Foreman Installer has been downloaded!\e[0m'
+  # Starts foreman-installer
+  echo
+  echo -e '\e[01;34mInitializing The Foreman Installer...\e[0m'
+  echo "-------------------------------------"
+  sleep 1
+  echo -e '\e[33mMake any additional changes you would like\e[0m'
+  sleep 1
+  echo -e '\e[33mSelect option "20" and hit ENTER to run the install\e[0m'
+  sleep 1
+  echo
+  echo -e '\e[97mHere\e[0m'
+  sleep .5
+  echo -e '\e[97mWe\e[0m'
+  sleep .5
+  echo -e '\e[01;97;42mG O ! ! ! !\e[0m'
+  foreman-installer -i -v
+  # Sets foreman and foreman-proxy services to start on boot
+  sed -i 's/START=no/START=yes/g' /etc/default/foreman
+  echo "START=yes" >> /etc/default/foreman-proxy
+  # Sets it so you the puppetmaster and puppet services starts on boot
+  sed -i 's/START=no/START=yes/g' /etc/default/puppet
+  # Makes changes for Puppet 3.6.2 deprecation warning
+  #sed -i '0,/\[main\]/s/\[main\]/&\n # Puppet 3.6.2 Modification\n environmentpath=$confdir\/environments\n/g' /etc/puppet/puppet.conf
+  #sed -i '/\[development\]/d' /etc/puppet/puppet.conf
+  #sed -i '/\[production\]/d' /etc/puppet/puppet.conf
+  #sed -i '/modulepath/d' /etc/puppet/puppet.conf
+  #sed -i '/config_version/d' /etc/puppet/puppet.conf
+  # Restarts the foreman and foreman-proxy services
+  service foreman restart
+  service foreman-proxy restart
+  echo -e '\e[01;37;42mThe Foreman has been installed!\e[0m'
+  # Restarts the apache2 service
+  echo
+  echo -e '\e[01;34m+++ Restarting the apache2 service...\e[0m'
+  service apache2 restart
+  echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
 }
 function doAll()
 {
-# Calls the setHostname function
-distribution=$1
-foreman_version=$2
-echo
-echo -e "\e[33m=== Set Machine's Hostname for Puppet Runs ? [RECOMMENDED] (y/n)\e[0m"
-read yesno
-if [ "$yesno" = "y" ]; then
-setHostname
-fi
-# Calls the puppetRepos function
-echo
-echo -e "\e[33m=== Add Latest Puppet Repos ? (y/n)\e[0m"
-read yesno
-if [ "$yesno" = "y" ]; then
-puppetRepos $distribution
-fi
-# Calls the installPuppet function
-echo
-echo -e "\e[33m=== Install Puppet Master ? (y/n)\e[0m"
-read yesno
-if [ "$yesno" = "y" ]; then
-installPuppet
-fi
-# Calls the enablePuppet function
-echo
-echo -e "\e[33m=== Enable Puppet Master Service ? (y/n)\e[0m"
-read yesno
-if [ "$yesno" = "y" ]; then
-enablePuppet
-fi
-# Calls the foremanRepos function
-echo
-echo -e "\e[33m=== Add Foreman Repos ? (y/n)\e[0m"
-read yesno
-if [ "$yesno" = "y" ]; then
-foremanRepos $distribution $foreman_version
-fi
-# Calls the installForeman function
-echo
-echo -e "\e[33m=== Install The Foreman ? (y/n)\e[0m"
-read yesno
-if [ "$yesno" = "y" ]; then
-installForeman
-fi
-# End of Script Congratulations, Farewell and Additional Information
-clear
-farewell=$(cat << EOZ
+  # Calls the setHostname function
+  distribution=$1
+  foreman_version=$2
+  echo
+  echo -e "\e[33m=== Set Machine's Hostname for Puppet Runs ? [RECOMMENDED] (y/n)\e[0m"
+  read yesno
+  if [ "$yesno" = "y" ]; then
+    setHostname
+  fi
+  # Calls the puppetRepos function
+  echo
+  echo -e "\e[33m=== Add Latest Puppet Repos ? (y/n)\e[0m"
+  read yesno
+  if [ "$yesno" = "y" ]; then
+    puppetRepos $distribution
+  fi
+  # Calls the installPuppet function
+  echo
+  echo -e "\e[33m=== Install Puppet Master ? (y/n)\e[0m"
+  read yesno
+  if [ "$yesno" = "y" ]; then
+    installPuppet
+  fi
+  # Calls the enablePuppet function
+  echo
+  echo -e "\e[33m=== Enable Puppet Master Service ? (y/n)\e[0m"
+  read yesno
+  if [ "$yesno" = "y" ]; then
+    enablePuppet
+  fi
+  # Calls the foremanRepos function
+  echo
+  echo -e "\e[33m=== Add Foreman Repos ? (y/n)\e[0m"
+  read yesno
+  if [ "$yesno" = "y" ]; then
+    foremanRepos $distribution $foreman_version
+  fi
+  # Calls the installForeman function
+  echo
+  echo -e "\e[33m=== Install The Foreman ? (y/n)\e[0m"
+  read yesno
+  if [ "$yesno" = "y" ]; then
+    installForeman
+  fi
+  clear
+  farewell=$(cat << EOZ
 \e[01;37;42mYou have completed your Puppet Master and Foreman Installation! \e[0m
 \e[01;39mProceed to your Foreman web UI, https://fqdn\e[0m
 \e[01;39mForeman Default Credentials:\e[0m
 \e[34mUsername\e[0m\e[01;39m: admin\e[0m
 \e[34mPassword\e[0m\e[01;39m: changeme\e[0m
 EOZ
-)
-#Calls the End of Script variable
-echo -e "$farewell"
-echo
-echo
-exit 0
+  )
+  #Calls the End of Script variable
+  echo -e "$farewell"
+  echo
+  echo
+  exit 0
 }
+#
+######## MAIN ########
+#
 # check whether user had supplied -h or --help . If yes display usage
 if [[ ( $# == "--help") ||  $# == "-h" ]]; then
-usage && exit 0
+  usage && exit 0
 fi
 # check number of arguments 
 if [  $# -lt 2 ]; then 
-usage && exit 1
+  usage && exit 1
 fi 
-# check if the script is not run as root user 
+# check if the script is run as root user 
 if [[ $USER != "root" ]]; then 
-echo "This script must be run as root!" && exit 1
+  echo "This script must be run as root!" && exit 1
 fi 
-# Welcome to the script
-clear
-welcome=$(cat << EOA
-\e[01;37;42mPuppet/Foreman Master Installer on Debian derivatives\e[0m
-EOA
-)
+#
 distribution=$1
 foreman_version=$2
-# Calls the welcome variable
-echo -e "$welcome"
-# Calls the doAll function
+clear
+echo -e "\e[01;37;42mPuppet/Foreman Master Installer on Debian derivatives\e[0m"
 case "$go" in
-* )
-doAll $distribution $foreman_version ;;
+  * )
+    doAll $distribution $foreman_version ;;
 esac
 exit 0
