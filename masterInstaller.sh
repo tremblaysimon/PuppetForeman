@@ -104,6 +104,13 @@ function installForeman()
   service apache2 restart
   echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
 }
+function installGit()
+{
+  # Installs Git
+  echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
+  apt-get install git -y
+  echo -e '\e[01;37;42mGit has been installed!\e[0m'
+}
 function doAll()
 {
   # Calls the setHostname function
@@ -168,6 +175,16 @@ function doAll()
   fi
   if [ "$yesno" = "y" ]; then
     installForeman
+  fi
+  # Calls the installGit function
+  if [ $yes_switch = "-y" ]; then
+    yesno=y
+  else
+    echo && echo -e "\e[33m=== Install Git ? (y/n)\e[0m"
+    read yesno
+  fi
+  if [ "$yesno" = "y" ]; then
+    installGit
   fi
   clear
   farewell=$(cat << EOZ
