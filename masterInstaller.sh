@@ -27,6 +27,13 @@ function setHostname()
   FQDN=`hostname -f`
   echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $FQDN $Hostname puppet" > /etc/hosts
 }
+function installApache()
+{
+  # Installs Apache
+  echo && echo -e '\e[01;34m+++ Installing Apache...\e[0m'
+  apt-get install apache2 -y
+  echo -e '\e[01;37;42mThe Apache has been installed!\e[0m'
+}
 function puppetRepos()
 {
   # Gets the latest puppet repos
@@ -125,6 +132,15 @@ function doAll()
   fi
   if [ "$yesno" = "y" ]; then
     setHostname
+  fi
+  if [ "$yes_switch" = "-y" ]; then
+    yesno=y
+  else
+    echo && echo -e "\e[33m=== Install Apache (y/n)\e[0m"
+    read yesno
+  fi
+  if [ "$yesno" = "y" ]; then
+    installApache
   fi
   # Calls the puppetRepos function
   if [ "$yes_switch" = "-y" ]; then
