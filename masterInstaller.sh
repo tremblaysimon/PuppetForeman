@@ -117,7 +117,7 @@ function doAll()
   distribution=$1
   foreman_version=$2
   yes_switch=$3
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Set Machine's Hostname for Puppet Runs ? [RECOMMENDED] (y/n)\e[0m"
@@ -127,7 +127,7 @@ function doAll()
     setHostname
   fi
   # Calls the puppetRepos function
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Add Latest Puppet Repos ? (y/n)\e[0m"
@@ -137,7 +137,7 @@ function doAll()
     puppetRepos $distribution
   fi
   # Calls the installPuppet function
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Install Puppet Master ? (y/n)\e[0m"
@@ -147,7 +147,7 @@ function doAll()
     installPuppet
   fi
   # Calls the enablePuppet function
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Enable Puppet Master Service ? (y/n)\e[0m"
@@ -157,7 +157,7 @@ function doAll()
     enablePuppet
   fi
   # Calls the foremanRepos function
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Add Foreman Repos ? (y/n)\e[0m"
@@ -167,7 +167,7 @@ function doAll()
     foremanRepos $distribution $foreman_version
   fi
   # Calls the installForeman function
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Install The Foreman ? (y/n)\e[0m"
@@ -177,7 +177,7 @@ function doAll()
     installForeman
   fi
   # Calls the installGit function
-  if [ $yes_switch = "-y" ]; then
+  if [ "$yes_switch" = "-y" ]; then
     yesno=y
   else
     echo && echo -e "\e[33m=== Install Git ? (y/n)\e[0m"
