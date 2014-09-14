@@ -44,6 +44,8 @@ function installApache()
   # Installs Apache
   echo && echo -e '\e[01;34m+++ Installing Apache...\e[0m'
   apt-get install apache2 -y
+  # fix utf8 encoding in apache2
+  sed -i 's/export LANG=C/export LANG=C.UTF-8/' /etc/apache2/envvars
   echo -e '\e[01;37;42mThe Apache has been installed!\e[0m'
 }
 function puppetRepos()
