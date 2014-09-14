@@ -83,8 +83,6 @@ function installForeman()
   sleep 1
   echo -e '\e[33mMake any additional changes you would like\e[0m'
   sleep 1
-  echo -e '\e[33mSelect option "20" and hit ENTER to run the install\e[0m'
-  sleep 1
   echo && echo -e '\e[97mHere\e[0m'
   sleep .5
   echo -e '\e[97mWe\e[0m'
