@@ -18,7 +18,19 @@ function usage()
   echo -e "  distribution : wheeezy, trusty, etc"
   echo -e "  foreman_version : 1.4, 1.5, etc"
   echo -e "  -y : don't ask for confirmation"
-} 
+}
+function askQuestion()
+{
+  question=$1
+  yes_switch=$2
+  yesno="n"
+  if [ "$yes_switch" = "-y" ]; then
+    yesno=y
+  else
+    echo && echo -e "\e[33m=== $question (y/n)\e[0m"
+    read yesno
+  fi
+}
 function setHostname()
 {
   # Edits the /etc/hosts file
