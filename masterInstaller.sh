@@ -204,9 +204,6 @@ function doAll()
   farewell=$(cat << EOZ
 \e[01;37;42mYou have completed your Puppet Master and Foreman Installation! \e[0m
 \e[01;39mProceed to your Foreman web UI, https://fqdn\e[0m
-\e[01;39mForeman Default Credentials:\e[0m
-\e[34mUsername\e[0m\e[01;39m: admin\e[0m
-\e[34mPassword\e[0m\e[01;39m: changeme\e[0m
 EOZ
   )
   #Calls the End of Script variable
