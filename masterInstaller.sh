@@ -192,16 +192,6 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     foremanRepos $distribution $foreman_version
   fi
-  # Calls the installForeman function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Install The Foreman ? (y/n)\e[0m"
-    read yesno
-  fi
-  if [ "$yesno" = "y" ]; then
-    installForeman
-  fi
   # Calls the installGit function
   if [ "$yes_switch" = "-y" ]; then
     yesno=y
@@ -211,6 +201,16 @@ function doAll()
   fi
   if [ "$yesno" = "y" ]; then
     installGit
+  fi
+  # Calls the installForeman function
+  if [ "$yes_switch" = "-y" ]; then
+    yesno=y
+  else
+    echo && echo -e "\e[33m=== Install The Foreman ? (y/n)\e[0m"
+    read yesno
+  fi
+  if [ "$yesno" = "y" ]; then
+    installForeman
   fi
   clear
   farewell=$(cat << EOZ
