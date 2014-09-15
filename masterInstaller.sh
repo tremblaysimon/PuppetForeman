@@ -201,13 +201,13 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     installGit
   fi
-  askQuestion "Add Foreman Repos ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    foremanRepos $distribution $foreman_version
-  fi
   askQuestion "Install The Foreman ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installForeman
+  fi
+  askQuestion "Add Foreman Repos ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    foremanRepos $distribution $foreman_version
   fi
   clear
   farewell=$(cat << EOZ
