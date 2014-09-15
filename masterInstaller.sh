@@ -21,6 +21,7 @@ function usage()
 }
 function askQuestion()
 {
+  # ask yes/no question : answer stored in $yesno var
   question=$1
   yes_switch=$2
   yesno="n"
@@ -60,7 +61,7 @@ function puppetRepos()
 }
 function installPuppet()
 {
-  # Installs the latest version of puppetmaster
+  # Installs puppetmaster
   echo && echo -e '\e[01;34m+++ Installing Puppet Master...\e[0m'
   apt-get install puppetmaster -y
   echo -e '\e[01;37;42mThe Puppet Master has been installed!\e[0m'
@@ -108,12 +109,6 @@ function installForeman()
   echo "START=yes" >> /etc/default/foreman-proxy
   # Sets it so you the puppetmaster and puppet services starts on boot
   sed -i 's/START=no/START=yes/g' /etc/default/puppet
-  # Makes changes for Puppet 3.6.2 deprecation warning
-  #sed -i '0,/\[main\]/s/\[main\]/&\n # Puppet 3.6.2 Modification\n environmentpath=$confdir\/environments\n/g' /etc/puppet/puppet.conf
-  #sed -i '/\[development\]/d' /etc/puppet/puppet.conf
-  #sed -i '/\[production\]/d' /etc/puppet/puppet.conf
-  #sed -i '/modulepath/d' /etc/puppet/puppet.conf
-  #sed -i '/config_version/d' /etc/puppet/puppet.conf
   # Restarts the foreman and foreman-proxy services
   service foreman restart
   service foreman-proxy restart
@@ -128,6 +123,7 @@ function installGit()
   # Installs Git
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
+  # Configure puppet with dynamics environments with git
   cd /etc/puppet/environments/production
   git init
   git add *
@@ -173,14 +169,15 @@ else
 fi
 exit 0
 EOF
-  echo -e '\e[01;37;42mGit has been installed!\e[0m'
+  chmod +x /opt/git/puppet.git/hooks/post-receive
+  echo -e '\e[01;37;42mGit has been installed (Puppet repos is in /opt/git)!\e[0m'
 }
 function doAll()
 {
   distribution=$1
   foreman_version=$2
   yes_switch=$3
-  askQuestion "Set Machine's Hostname for Puppet Runs ? [RECOMMENDED]" $yes_switch
+  askQuestion "Set Machine's Hostname for Puppet Runs ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     setHostname
   fi
