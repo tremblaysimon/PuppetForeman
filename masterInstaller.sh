@@ -2,7 +2,7 @@
 # Puppet Master Install with The Foreman on Debian variants
 # Revised by: Claude Durocher
 # <https://github.com/clauded>
-# Version 1.3.1
+# Version 1.4.0
 #
 # Fork from this source:
 #  Author: John McCarthy
