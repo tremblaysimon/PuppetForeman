@@ -128,89 +128,87 @@ function installGit()
   # Installs Git
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
+  cd /etc/puppet/environments/production
+  git init
+  git add *
+  git commit -m "Initial import of Production Puppet repository"
+  cd /opt/git
+  mkdir /opt/git
+  git clone --bare /etc/puppet/environments/production puppet.git
+  #chgrp -R wheel /opt/git/puppet.git
+  #chmod -R g+w /opt/git/puppet.git
+  cat <<'EOF' > /opt/git/puppet.git/hooks/post-receive
+#!/bin/bash
+ 
+read oldrev newrev refname
+ 
+REPOSITORY="/opt/git/puppet.git"
+BRANCH=$( echo "${refname}" | sed -n 's!^refs/heads/!!p' )
+ENVIRONMENT_BASE="/etc/puppet/environments"
+ 
+# master branch, as defined by git, is production
+if [[ "${BRANCH}" == "master" ]]; then
+    ACTUAL_BRANCH="production"
+else
+    ACTUAL_BRANCH=${BRANCH}
+fi
+ 
+# newrev is a bunch of 0s
+echo "${newrev}" | grep -qs '^0*$'
+if [ "$?" -eq "0" ]; then
+    # branch is marked for deletion
+    if [ "${ACTUAL_BRANCH}" = "production" ]; then
+        echo "No way!"
+        exit 1
+    fi
+    echo "Deleting remote branch ${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}"
+    sudo su - puppet -c "cd ${ENVIRONMENT_BASE}; rm -rf ${ACTUAL_BRANCH}"
+else
+    echo "Updating remote branch ${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}"
+    if [ -d "${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}" ]; then
+        sudo su - puppet -c "cd ${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}; git fetch --all; git reset --hard origin/${BRANCH}"
+    else
+        sudo su - puppet -c "cd ${ENVIRONMENT_BASE}; git clone ${REPOSITORY} ${ACTUAL_BRANCH} --branch ${BRANCH}"
+    fi
+fi
+exit 0
+EOF
   echo -e '\e[01;37;42mGit has been installed!\e[0m'
 }
 function doAll()
 {
-  # Calls the setHostname function
   distribution=$1
   foreman_version=$2
   yes_switch=$3
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Set Machine's Hostname for Puppet Runs ? [RECOMMENDED] (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Set Machine's Hostname for Puppet Runs ? [RECOMMENDED]" $yes_switch
   if [ "$yesno" = "y" ]; then
     setHostname
   fi
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Install Apache (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Install Apache" $yes_switch
   if [ "$yesno" = "y" ]; then
     installApache
   fi
-  # Calls the puppetRepos function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Add Latest Puppet Repos ? (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Add Latest Puppet Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     puppetRepos $distribution
   fi
-  # Calls the installPuppet function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Install Puppet Master ? (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Install Puppet Master ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installPuppet
   fi
-  # Calls the enablePuppet function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Enable Puppet Master Service ? (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Enable Puppet Master Service ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     enablePuppet
   fi
-  # Calls the foremanRepos function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Add Foreman Repos ? (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     foremanRepos $distribution $foreman_version
   fi
-  # Calls the installGit function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Install Git ? (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installGit
   fi
-  # Calls the installForeman function
-  if [ "$yes_switch" = "-y" ]; then
-    yesno=y
-  else
-    echo && echo -e "\e[33m=== Install The Foreman ? (y/n)\e[0m"
-    read yesno
-  fi
+  askQuestion "Install The Foreman ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installForeman
   fi
