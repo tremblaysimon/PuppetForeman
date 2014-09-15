@@ -132,8 +132,8 @@ function installGit()
   git init
   git add *
   git commit -m "Initial import of Production Puppet repository"
-  cd /opt/git
   mkdir /opt/git
+  cd /opt/git
   git clone --bare /etc/puppet/environments/production puppet.git
   #chgrp -R wheel /opt/git/puppet.git
   #chmod -R g+w /opt/git/puppet.git
@@ -200,13 +200,13 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     enablePuppet
   fi
-  askQuestion "Add Foreman Repos ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    foremanRepos $distribution $foreman_version
-  fi
   askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installGit
+  fi
+  askQuestion "Add Foreman Repos ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    foremanRepos $distribution $foreman_version
   fi
   askQuestion "Install The Foreman ?" $yes_switch
   if [ "$yesno" = "y" ]; then
