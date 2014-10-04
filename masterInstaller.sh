@@ -123,53 +123,6 @@ function installGit()
   # Installs Git
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
-  # Configure puppet with dynamics environments with git
-  #cd /etc/puppet/environments/production
-  #git init
-  #git add *
-  #git commit -m "Initial import of Production Puppet repository"
-  #mkdir /opt/git
-  #cd /opt/git
-  #git clone --bare /etc/puppet/environments/production puppet.git
-  ##chgrp -R wheel /opt/git/puppet.git
-  ##chmod -R g+w /opt/git/puppet.git
-  cat <<'EOF' > /opt/git/puppet.git/hooks/post-receive
-#!/bin/bash
- 
-read oldrev newrev refname
- 
-REPOSITORY="/opt/git/puppet.git"
-BRANCH=$( echo "${refname}" | sed -n 's!^refs/heads/!!p' )
-ENVIRONMENT_BASE="/etc/puppet/environments"
- 
-# master branch, as defined by git, is production
-if [[ "${BRANCH}" == "master" ]]; then
-    ACTUAL_BRANCH="production"
-else
-    ACTUAL_BRANCH=${BRANCH}
-fi
- 
-# newrev is a bunch of 0s
-echo "${newrev}" | grep -qs '^0*$'
-if [ "$?" -eq "0" ]; then
-    # branch is marked for deletion
-    if [ "${ACTUAL_BRANCH}" = "production" ]; then
-        echo "No way!"
-        exit 1
-    fi
-    echo "Deleting remote branch ${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}"
-    sudo su - puppet -c "cd ${ENVIRONMENT_BASE}; rm -rf ${ACTUAL_BRANCH}"
-else
-    echo "Updating remote branch ${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}"
-    if [ -d "${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}" ]; then
-        sudo su - puppet -c "cd ${ENVIRONMENT_BASE}/${ACTUAL_BRANCH}; git fetch --all; git reset --hard origin/${BRANCH}"
-    else
-        sudo su - puppet -c "cd ${ENVIRONMENT_BASE}; git clone ${REPOSITORY} ${ACTUAL_BRANCH} --branch ${BRANCH}"
-    fi
-fi
-exit 0
-EOF
-  chmod +x /opt/git/puppet.git/hooks/post-receive
   echo -e '\e[01;37;42mGit has been installed (Puppet repos is in /opt/git)!\e[0m'
 }
 function doAll()
