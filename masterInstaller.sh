@@ -124,15 +124,15 @@ function installGit()
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
   # Configure puppet with dynamics environments with git
-  cd /etc/puppet/environments/production
-  git init
-  git add *
-  git commit -m "Initial import of Production Puppet repository"
-  mkdir /opt/git
-  cd /opt/git
-  git clone --bare /etc/puppet/environments/production puppet.git
-  #chgrp -R wheel /opt/git/puppet.git
-  #chmod -R g+w /opt/git/puppet.git
+  #cd /etc/puppet/environments/production
+  #git init
+  #git add *
+  #git commit -m "Initial import of Production Puppet repository"
+  #mkdir /opt/git
+  #cd /opt/git
+  #git clone --bare /etc/puppet/environments/production puppet.git
+  ##chgrp -R wheel /opt/git/puppet.git
+  ##chmod -R g+w /opt/git/puppet.git
   cat <<'EOF' > /opt/git/puppet.git/hooks/post-receive
 #!/bin/bash
  
