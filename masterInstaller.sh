@@ -2,7 +2,7 @@
 # Puppet Master Install with The Foreman on Debian variants
 # Revised by: Claude Durocher
 # <https://github.com/clauded>
-# Version 1.4.0
+# Version 1.4.1
 #
 # Fork from this source:
 #  Author: John McCarthy
@@ -154,18 +154,18 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     installGit
   fi
-  askQuestion "Install The Foreman ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    installForeman
-  fi
   askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     foremanRepos $distribution $foreman_version
   fi
+  askQuestion "Install The Foreman ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    installForeman
+  fi
   clear
   farewell=$(cat << EOZ
 \e[01;37;42mYou have completed your Puppet Master and Foreman Installation! \e[0m
-\e[01;39mProceed to your Foreman web UI, https://fqdn\e[0m
+\e[01;39mProceed to your Foreman web UI, https://serverfqdn\e[0m
 EOZ
   )
   #Calls the End of Script variable
