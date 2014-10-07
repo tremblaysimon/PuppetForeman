@@ -1,3 +1,3 @@
 # PuppetForeman #
 
-Script to install the Puppet Master and The Foreman packages on Debian Wheezy
+Script to install the Puppet Master and The Foreman packages on Debian and Ubuntu
