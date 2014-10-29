@@ -1,0 +1,9 @@
+:cachedir: /var/cache/r10k
+:sources:
+  puppet:
+    basedir: /etc/puppet/environments
+    prefix: false
+    remote: https://gitlab.forge.gouv.qc.ca/simon.tremblay/cellpuppetrepo.git
+
+:purgedirs:
+  - /etc/puppet/environments
