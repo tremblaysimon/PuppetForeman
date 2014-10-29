@@ -85,7 +85,7 @@ function configurer10k()
   #Copy template file to /etc/r10k.yaml
   cp ./r10k.yaml /etc/r10k.yaml
   #read input
-  defaultRepo="https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git"
+  defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' ./r10k.yaml)
   read -p "Enter Puppetfile repository [$defaultRepo]: " userRepo
   userRepo=${userRepo:-$defaultRepo}
   echo "r10k Puppetfile repository is $userRepo"
