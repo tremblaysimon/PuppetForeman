@@ -2,7 +2,7 @@
 # Puppet Master Install with The Foreman on Debian variants
 # Revised by: Claude Durocher
 # <https://github.com/clauded>
-# Version 1.4.1
+# Version 1.5.0
 #
 # Fork from this source:
 #  Author: John McCarthy
@@ -72,6 +72,34 @@ function enablePuppet()
   echo && echo -e '\e[01;34m+++ Enabling Puppet Master Service...\e[0m'
   puppet resource service puppetmaster ensure=running enable=true
   echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
+}
+function installRuby()
+{
+  echo && echo -e '\e[01;34m+++ Installing Ruby...\e[0m'
+  apt-get install ruby -y
+  echo -e '\e[01;37;42mRuby has been installed!\e[0m'
+}
+function configurer10k()
+{
+  echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
+  #Copy template file to /etc/r10k.yaml
+  cp ./r10k.yaml /etc/r10k.yaml
+  #read input
+  defaultRepo = "https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git"
+  read -p "Enter Puppetfile repository [$defaultRepo]: " userRepo
+  userRepo=${userRepo:-$userRepo}
+  echo "r10k Puppetfile repository is $userRepo"
+  # sed
+  echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc/...\e[0m'
+  echo -e '\e[01;37;42mRuby has been configured!\e[0m'
+
+}
+function installr10k()
+{
+  echo && echo -e '\e[01;34m+++ Installing r10k...\e[0m'
+  gem install r10k
+  echo -e '\e[01;37;42mr10k has been installed!\e[0m'
+  configurer10k
 }
 function foremanRepos()
 {
@@ -153,6 +181,14 @@ function doAll()
   askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installGit
+  fi
+  askQuestion "Install Ruby ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    installRuby
+  fi
+  askQuestion "Install r10k ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    installr10k
   fi
   askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
