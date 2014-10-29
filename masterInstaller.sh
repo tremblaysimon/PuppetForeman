@@ -85,11 +85,11 @@ function configurer10k()
   #Copy template file to /etc/r10k.yaml
   cp ./r10k.yaml /etc/r10k.yaml
   #read input
-  defaultRepo = "https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git"
+  defaultRepo="https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git"
   read -p "Enter Puppetfile repository [$defaultRepo]: " userRepo
-  userRepo=${userRepo:-$userRepo}
+  userRepo=${userRepo:-$defaultRepo}
   echo "r10k Puppetfile repository is $userRepo"
-  sed -i "s/^\(\s*remote\s*:\s*\).*$/\1$userRepo/" /etc/r10k.yaml
+  sed -i 's#^\(\s*remote\s*:\s*\).*$#\1'$userRepo'#' /etc/r10k.yaml
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc/...\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 
