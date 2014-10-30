@@ -1,9 +1,0 @@
-:cachedir: /var/cache/r10k
-:sources:
-  puppet:
-    basedir: /etc/puppet/environments
-    prefix: false
-    remote: https://your.remote.depot/repo-name.git
-
-:purgedirs:
-  - /etc/puppet/environments

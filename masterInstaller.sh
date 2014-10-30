@@ -80,9 +80,21 @@ function installr10k()
   echo -e '\e[01;37;42mr10k has been installed!\e[0m'
 
   echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
+  
+  # Create /etc/r10k.yaml file.
+  cat << EOZ > /etc/r10k.yaml
+:cachedir: /var/cache/r10k
+:sources:
+  puppet:
+    basedir: /etc/puppet/environments
+    prefix: false
+    remote: https://your.remote.depot/repo-name.git
 
-  cp ./r10k.yaml /etc/r10k.yaml
+:purgedirs:
+  - /etc/puppet/environments
+EOZ
 
+  # User must enter a repository or press enter with nothing to continue.
   defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' ./r10k.yaml)
   read -p "Enter r10k Puppetfile repository [$defaultRepo]: " userRepo
   userRepo=${userRepo:-$defaultRepo}
