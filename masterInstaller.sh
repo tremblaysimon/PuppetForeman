@@ -73,8 +73,12 @@ function enablePuppet()
   puppet resource service puppetmaster ensure=running enable=true
   echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
 }
-function configurer10k()
+function installr10k()
 {
+  echo && echo -e '\e[01;34m+++ Installing r10k...\e[0m'
+  gem install r10k
+  echo -e '\e[01;37;42mr10k has been installed!\e[0m'
+
   echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
 
   cp ./r10k.yaml /etc/r10k.yaml
@@ -87,13 +91,6 @@ function configurer10k()
 
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
-}
-function installr10k()
-{
-  echo && echo -e '\e[01;34m+++ Installing r10k...\e[0m'
-  gem install r10k
-  echo -e '\e[01;37;42mr10k has been installed!\e[0m'
-  configurer10k
 }
 function foremanRepos()
 {
