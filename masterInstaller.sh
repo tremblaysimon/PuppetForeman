@@ -73,12 +73,6 @@ function enablePuppet()
   puppet resource service puppetmaster ensure=running enable=true
   echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
 }
-function installRuby()
-{
-  echo && echo -e '\e[01;34m+++ Installing Ruby...\e[0m'
-  apt-get install ruby -y
-  echo -e '\e[01;37;42mRuby has been installed!\e[0m'
-}
 function configurer10k()
 {
   echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
@@ -181,10 +175,6 @@ function doAll()
   askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installGit
-  fi
-  askQuestion "Install Ruby ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    installRuby
   fi
   askQuestion "Install r10k ?" $yes_switch
   if [ "$yesno" = "y" ]; then
