@@ -92,7 +92,6 @@ function configurer10k()
   sed -i 's#^\(\s*remote\s*:\s*\).*$#\1'$userRepo'#' /etc/r10k.yaml
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc/...\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
-
 }
 function installr10k()
 {
