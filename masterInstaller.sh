@@ -82,15 +82,16 @@ function installRuby()
 function configurer10k()
 {
   echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
-  #Copy template file to /etc/r10k.yaml
+
   cp ./r10k.yaml /etc/r10k.yaml
-  #read input
+
   defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' ./r10k.yaml)
-  read -p "Enter Puppetfile repository [$defaultRepo]: " userRepo
+  read -p "Enter r10k Puppetfile repository [$defaultRepo]: " userRepo
   userRepo=${userRepo:-$defaultRepo}
   echo "r10k Puppetfile repository is $userRepo"
   sed -i 's#^\(\s*remote\s*:\s*\).*$#\1'$userRepo'#' /etc/r10k.yaml
-  echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc/...\e[0m'
+
+  echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 }
 function installr10k()
