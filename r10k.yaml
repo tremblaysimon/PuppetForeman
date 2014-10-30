@@ -3,7 +3,7 @@
   puppet:
     basedir: /etc/puppet/environments
     prefix: false
-    remote: https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git
+    remote: https://your.remote.depot/repo-name.git
 
 :purgedirs:
   - /etc/puppet/environments
