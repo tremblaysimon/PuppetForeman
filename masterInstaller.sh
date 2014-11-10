@@ -104,6 +104,32 @@ EOZ
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 }
+function installReaktor()
+{
+  #Install redis
+ 
+  #Install bundler
+  
+  #git clone git://github.com/pzim/reaktor
+
+  #Switch to tag 1.0.2
+
+  #export variables: 
+
+  # RACK_ROOT
+
+  # PUPPETFILE_GIT_URL
+
+  # REAKTOR_PUPPET_MASTERS_FILE
+
+  # Create a master file that contains puppetmaster address hostname.
+
+  # Create a task to be sure that service is always running...
+
+  # generate a new ssh key to be able to use capistrano properly. 
+
+  # Ask for username password of puppetfile repo. Store them in .netrc file
+}
 function foremanRepos()
 {
   # Gets the latest foreman repos
@@ -188,6 +214,10 @@ function doAll()
   askQuestion "Install r10k ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installr10k
+  fi
+  askQuestion "Install reaktor ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    installReaktor
   fi
   askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
