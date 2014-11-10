@@ -106,14 +106,14 @@ EOZ
 }
 function installReaktor()
 {
-  #Install redis
- 
-  #Install bundler
+  # Install Reaktor requirements.
+  apt-get install redis-server -y  
+  apt-get install bundler -y
   
-  #git clone git://github.com/pzim/reaktor
-
-  #Switch to tag 1.0.2
-
+  # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
+  git clone git://github.com/pzim/reaktor
+  git checkout 1.0.2 
+  
   #export variables: 
 
   # RACK_ROOT
