@@ -2,7 +2,7 @@
 # Puppet Master Install with The Foreman on Debian variants
 # Revised by: Claude Durocher
 # <https://github.com/clauded>
-# Version 1.4.1
+# Version 1.5.0
 #
 # Fork from this source:
 #  Author: John McCarthy
@@ -72,6 +72,37 @@ function enablePuppet()
   echo && echo -e '\e[01;34m+++ Enabling Puppet Master Service...\e[0m'
   puppet resource service puppetmaster ensure=running enable=true
   echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
+}
+function installr10k()
+{
+  echo && echo -e '\e[01;34m+++ Installing r10k...\e[0m'
+  gem install r10k
+  echo -e '\e[01;37;42mr10k has been installed!\e[0m'
+
+  echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
+  
+  # Create /etc/r10k.yaml file.
+  cat << EOZ > /etc/r10k.yaml
+:cachedir: /var/cache/r10k
+:sources:
+  puppet:
+    basedir: /etc/puppet/environments
+    prefix: false
+    remote: https://your.remote.depot/repo-name.git
+
+:purgedirs:
+  - /etc/puppet/environments
+EOZ
+
+  # User must enter a repository or press enter with nothing to continue.
+  defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' ./r10k.yaml)
+  read -p "Enter r10k Puppetfile repository [$defaultRepo]: " userRepo
+  userRepo=${userRepo:-$defaultRepo}
+  echo "r10k Puppetfile repository is $userRepo"
+  sed -i 's#^\(\s*remote\s*:\s*\).*$#\1'$userRepo'#' /etc/r10k.yaml
+
+  echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
+  echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 }
 function foremanRepos()
 {
@@ -153,6 +184,10 @@ function doAll()
   askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installGit
+  fi
+  askQuestion "Install r10k ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    installr10k
   fi
   askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
