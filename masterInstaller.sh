@@ -111,16 +111,18 @@ function installReaktor()
   apt-get install bundler -y
   
   # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
+  cd /opt
   git clone git://github.com/pzim/reaktor
   git checkout 1.0.2 
-  
-  #export variables: 
-
-  # RACK_ROOT
-
-  # PUPPETFILE_GIT_URL
-
-  # REAKTOR_PUPPET_MASTERS_FILE
+ 
+  # Remove useless notifier plugin.
+  rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
+ 
+  # Export variables.
+  echo 'export RACK_ROOT="/opt/reaktor"' >> $HOME/.profile
+  echo 'export PUPPETFILE_GIT_URL="https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git"' >> $HOME/.profile
+  echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"'
+  source $HOME/.profile
 
   # Create a master file that contains puppetmaster address hostname.
 
@@ -129,6 +131,8 @@ function installReaktor()
   # generate a new ssh key to be able to use capistrano properly. 
 
   # Ask for username password of puppetfile repo. Store them in .netrc file
+
+  # Ask for puppetmaster hostname
 }
 function foremanRepos()
 {
