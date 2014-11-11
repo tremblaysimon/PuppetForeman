@@ -125,6 +125,7 @@ function installReaktor()
   source $HOME/.profile
 
   # Create a master file that contains puppetmaster address hostname.
+  touch /opt/reaktor/masters.txt
 
   # Create a task to be sure that service is always running...
 
