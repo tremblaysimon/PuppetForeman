@@ -95,7 +95,7 @@ function installr10k()
 EOZ
 
   # User must enter a repository or press enter with nothing to continue.
-  defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' ./r10k.yaml)
+  defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
   read -p "Enter r10k Puppetfile repository [$defaultRepo]: " userRepo
   userRepo=${userRepo:-$defaultRepo}
   echo "r10k Puppetfile repository is $userRepo"
