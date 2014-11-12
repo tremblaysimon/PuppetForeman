@@ -124,9 +124,9 @@ function installReaktor()
   defaultGitRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
  
   # Export variables.
-  echo 'export RACK_ROOT="/opt/reaktor"' >> $HOME/.profile
-  echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> $HOME/.profile
-  echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> $HOME/.profile
+  echo 'export RACK_ROOT="/opt/reaktor"' >> /etc/environment
+  echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> /etc/environment
+  echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> /etc/environment
   source $HOME/.profile
 
   # Create a master file that contains puppetmaster address hostname.
@@ -156,11 +156,15 @@ function installReaktor()
   rm -f $HOME/.netrc
   touch $HOME/.netrc
  
- defaultGitRepoFQDN=$(echo $defaultGitRepo | awk -F/ '{print $3}')
+  defaultGitRepoFQDN=$(echo $defaultGitRepo | awk -F/ '{print $3}')
 
   echo "machine $defaultGitRepoFQDN" >> $HOME/.netrc
   echo "login $userGitUsername" >> $HOME/.netrc
   echo "password $userGitPassword" >> $HOME/.netrc
+
+  # Set the IP Address in Reaktor config file.
+  hostIP=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')  
+  sed -i 's#^\(\s*address\s*:\s*\).*$#\1'$hostIP'#' /opt/reaktor/reaktor-cfg.yml
 }
 function foremanRepos()
 {
