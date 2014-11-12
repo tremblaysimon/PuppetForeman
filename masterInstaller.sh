@@ -114,11 +114,11 @@ function installReaktor()
   rm -rf /opt/reaktor
   cd /opt
   git clone git://github.com/pzim/reaktor
+  cd /opt/reaktor
   git checkout 1.0.2 
  
   # Remove useless notifier plugin.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
-
 
   # Get R10K Puppetfile git repository from R10K config file.
   defaultGitRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
