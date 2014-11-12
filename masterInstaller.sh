@@ -106,6 +106,8 @@ EOZ
 }
 function installReaktor()
 {
+  echo && echo -e '\e[01;34m+++ Installing Reaktor...\e[0m'
+
   # Install Reaktor requirements.
   apt-get install redis-server -y  
   apt-get install bundler -y
@@ -117,13 +119,13 @@ function installReaktor()
   cd /opt/reaktor
   git checkout 1.0.2 
  
-  # Remove useless notifier plugin.
+  # Remove useless notifier plugin to avoid log error.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
 
   # Get R10K Puppetfile git repository from R10K config file.
   defaultGitRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
  
-  # Export variables.
+  # Export Reaktor environment variables.
   echo 'export RACK_ROOT="/opt/reaktor"' >> /etc/environment
   echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> /etc/environment
   echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> /etc/environment
@@ -138,10 +140,12 @@ function installReaktor()
   userPuppetMaster=${userPuppetMaster:-$defaultPuppetMaster}
   echo "$userPuppetMaster" >> /opt/reaktor/masters.txt
 
-  # Create a task to be sure that service is always running...
-
-  # generate a new ssh key to be able to use capistrano properly. 
+  # Generate a new ssh key to be able to use capistrano properly. 
   # Mandatory if Reaktor is on the same machine that runs Puppet Master.  
+  cd $HOME/.ssh
+  ssh-keygen -t rsa -N "" -f id_rsa
+  echo "" >> authorized_keys
+  cat id_rsa.pub >> authorized_keys
 
   # Ask for username and password to access puppetfile git repo. Store them in .netrc file
   defaultGitUsername="username"
@@ -165,6 +169,10 @@ function installReaktor()
   # Set the IP Address in Reaktor config file.
   hostIP=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')  
   sed -i 's#^\(\s*address\s*:\s*\).*$#\1'$hostIP'#' /opt/reaktor/reaktor-cfg.yml
+
+  # Create a upstart job to be sure that service is always running...
+
+  echo -e '\e[01;37;42mReaktor has been installed!\e[0m'
 }
 function foremanRepos()
 {
