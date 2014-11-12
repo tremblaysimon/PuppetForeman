@@ -126,14 +126,18 @@ function installReaktor()
 
   # Create a master file that contains puppetmaster address hostname.
   touch /opt/reaktor/masters.txt
+  
+  # Currently that script supports only one puppet master in the masters txt file.
+  defaultPuppetMaster="puppet"
+  read -p "Enter Puppet Master server hostname [$puppetMaster]: " userPuppetMaster
+  userPuppetMaster=${userPuppetMaster:-$defaultPuppetMaster}
 
   # Create a task to be sure that service is always running...
 
   # generate a new ssh key to be able to use capistrano properly. 
 
-  # Ask for username password of puppetfile repo. Store them in .netrc file
-
-  # Ask for puppetmaster hostname
+  # Ask for username password to access puppetfile git repo. Store them in .netrc file
+  
 }
 function foremanRepos()
 {
