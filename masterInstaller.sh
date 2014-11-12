@@ -111,6 +111,7 @@ function installReaktor()
   apt-get install bundler -y
   
   # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
+  rm -rf /opt/reaktor
   cd /opt
   git clone git://github.com/pzim/reaktor
   git checkout 1.0.2 
@@ -133,8 +134,9 @@ function installReaktor()
   
   # Currently that script supports only one puppet master in the masters txt file.
   defaultPuppetMaster="puppet"
-  read -p "Enter Puppet Master server hostname [$puppetMaster]: " userPuppetMaster
+  read -p "Enter Puppet Master server hostname [$defaultPuppetMaster]: " userPuppetMaster
   userPuppetMaster=${userPuppetMaster:-$defaultPuppetMaster}
+  echo "$userPuppetMaster" >> /opt/reaktor/masters.txt
 
   # Create a task to be sure that service is always running...
 
