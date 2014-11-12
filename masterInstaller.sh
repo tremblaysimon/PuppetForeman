@@ -125,7 +125,7 @@ function installReaktor()
   # Export variables.
   echo 'export RACK_ROOT="/opt/reaktor"' >> $HOME/.profile
   echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> $HOME/.profile
-  echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"'
+  echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> $HOME/.profile
   source $HOME/.profile
 
   # Create a master file that contains puppetmaster address hostname.
