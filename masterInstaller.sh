@@ -117,10 +117,14 @@ function installReaktor()
  
   # Remove useless notifier plugin.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
+
+
+  # Get R10K Puppetfile git repository from R10K config file.
+  defaultGitRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
  
   # Export variables.
   echo 'export RACK_ROOT="/opt/reaktor"' >> $HOME/.profile
-  echo 'export PUPPETFILE_GIT_URL="https://gitlab.forge.gouv.qc.ca/puppet-cell/cellpuppetrepo.git"' >> $HOME/.profile
+  echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> $HOME/.profile
   echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"'
   source $HOME/.profile
 
@@ -135,9 +139,26 @@ function installReaktor()
   # Create a task to be sure that service is always running...
 
   # generate a new ssh key to be able to use capistrano properly. 
+  # Mandatory if Reaktor is on the same machine that runs Puppet Master.  
 
-  # Ask for username password to access puppetfile git repo. Store them in .netrc file
-  
+  # Ask for username and password to access puppetfile git repo. Store them in .netrc file
+  defaultGitUsername="username"
+  read -p "Enter R10K Puppetfile git repository username [$defaultGitUsername]: " userGitUsername
+  userGitUsername=${userGitUsername:-$defaultGitUsername}
+
+  defaultGitPassword="password"
+  read -p "Enter R10K Puppetfile git repository password [$defaultGitPassword]: " userGitPassword
+  userGitPassword=${userGitPassword:-$defaultGitPassword}
+ 
+  # Assume empty .netrc
+  rm -f $HOME/.netrc
+  touch $HOME/.netrc
+ 
+ defaultGitRepoFQDN=$(echo $defaultGitRepo | awk -F/ '{print $3}')
+
+  echo "machine $defaultGitRepoFQDN" >> $HOME/.netrc
+  echo "login $userGitUsername" >> $HOME/.netrc
+  echo "password $userGitPassword" >> $HOME/.netrc
 }
 function foremanRepos()
 {
