@@ -170,7 +170,20 @@ function installReaktor()
   hostIP=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')  
   sed -i 's#^\(\s*address\s*:\s*\).*$#\1'$hostIP'#' /opt/reaktor/reaktor-cfg.yml
 
-  # Create a upstart job to be sure that service is always running...
+  # Create a upstart job to be sure that service is always running.
+  rm -f /etc/init/reaktor.conf
+  cat << EOZ > /etc/init/reaktor.conf
+start on startup
+stop on starting rcS
+
+chdir /opt/reaktor/
+setuid tresi02
+setgid tresi02
+script
+  . /etc/environment 
+  /usr/local/bin/rake start  
+end script
+EOZ
 
   echo -e '\e[01;37;42mReaktor has been installed!\e[0m'
 }
