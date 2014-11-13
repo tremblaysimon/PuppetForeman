@@ -111,7 +111,23 @@ function installReaktor()
   # Install Reaktor requirements.
   apt-get install redis-server -y  
   apt-get install bundler -y
-  
+
+  # Use UpStart for redis-server instead of old SystemV.
+  update-rc.d redis-server disable
+ 
+  rm -f /etc/init/redis-server.conf
+  cat << EOZ > /etc/init/redis-server.conf
+description "redis server"
+
+start on runlevel [23]
+stop on shutdown
+
+exec sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf
+
+respawn
+EOZ
+
+ 
   # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
   rm -rf /opt/reaktor
   cd /opt
