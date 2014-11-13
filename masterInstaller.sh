@@ -127,7 +127,13 @@ exec sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf
 respawn
 EOZ
 
- 
+  # Ask user that will run reaktor.
+  defaultUser="ubuntu"
+  read -p "Enter username that launch reaktor [$defaultUser]: " user
+  user=${user:-$defaultUser}
+
+  homedir="$(getent passwd $user | awk -F ':' '{print $6}')"
+  
   # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
   rm -rf /opt/reaktor
   cd /opt
@@ -145,7 +151,7 @@ EOZ
   echo 'export RACK_ROOT="/opt/reaktor"' >> /etc/environment
   echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> /etc/environment
   echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> /etc/environment
-  source $HOME/.profile
+  source $homedir/.profile
 
   # Create a master file that contains puppetmaster address hostname.
   touch /opt/reaktor/masters.txt
@@ -158,7 +164,8 @@ EOZ
 
   # Generate a new ssh key to be able to use capistrano properly. 
   # Mandatory if Reaktor is on the same machine that runs Puppet Master.  
-  cd $HOME/.ssh
+  cd $homedir/.ssh
+
   ssh-keygen -t rsa -N "" -f id_rsa
   echo "" >> authorized_keys
   cat id_rsa.pub >> authorized_keys
@@ -173,14 +180,14 @@ EOZ
   userGitPassword=${userGitPassword:-$defaultGitPassword}
  
   # Assume empty .netrc
-  rm -f $HOME/.netrc
-  touch $HOME/.netrc
+  rm -f $homedir/.netrc
+  touch $homedir/.netrc
  
   defaultGitRepoFQDN=$(echo $defaultGitRepo | awk -F/ '{print $3}')
 
-  echo "machine $defaultGitRepoFQDN" >> $HOME/.netrc
-  echo "login $userGitUsername" >> $HOME/.netrc
-  echo "password $userGitPassword" >> $HOME/.netrc
+  echo "machine $defaultGitRepoFQDN" >> $homedir/.netrc
+  echo "login $userGitUsername" >> $homedir/.netrc
+  echo "password $userGitPassword" >> $homedir/.netrc
 
   # Set the IP Address in Reaktor config file.
   hostIP=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')  
@@ -193,8 +200,8 @@ start on startup
 stop on starting rcS
 
 chdir /opt/reaktor/
-setuid tresi02
-setgid tresi02
+setuid $user
+setgid $user
 script
   . /etc/environment 
   /usr/local/bin/rake start  
