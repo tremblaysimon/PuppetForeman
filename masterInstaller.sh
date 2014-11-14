@@ -142,7 +142,7 @@ EOZ
   git checkout 1.0.2 
   
   # Change access right in favor of selected user that will run the process.
-  chmod -R $user:$group /opt/reaktor 
+  chown -R $user:$group /opt/reaktor 
   
   # Remove useless notifier plugin to avoid log error.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
@@ -165,6 +165,7 @@ EOZ
 
   # Generate a new ssh key to be able to use capistrano properly. 
   # Mandatory if Reaktor is on the same machine that runs Puppet Master.  
+  mkdir $homedir/.ssh
   cd $homedir/.ssh
 
   ssh-keygen -t rsa -N "" -f id_rsa
