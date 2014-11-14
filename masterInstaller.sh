@@ -140,7 +140,10 @@ EOZ
   git clone git://github.com/pzim/reaktor
   cd /opt/reaktor
   git checkout 1.0.2 
- 
+  
+  # Change access right in favor of selected user that will run the process.
+  chmod 777 /opt/reaktor 
+  
   # Remove useless notifier plugin to avoid log error.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
 
