@@ -109,8 +109,7 @@ function installReaktor()
   echo && echo -e '\e[01;34m+++ Installing Reaktor...\e[0m'
 
   # Install Reaktor requirements.
-  apt-get install redis-server -y  
-  apt-get install bundler -y
+  apt-get install bundler redis-server -y  
 
   # Use UpStart for redis-server instead of old SystemV.
   update-rc.d redis-server disable
@@ -127,11 +126,12 @@ exec sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf
 respawn
 EOZ
 
-  # Ask user that will run reaktor.
-  defaultUser="ubuntu"
-  read -p "Enter username that launch reaktor [$defaultUser]: " user
-  user=${user:-$defaultUser}
-
+  # Use reaktor as a username/group to run Reaktor processes.
+  user="reaktor"
+  group=$user
+  groupadd $group
+  useradd $user -s /bin/bash -m -g $group 
+  
   homedir="$(getent passwd $user | awk -F ':' '{print $6}')"
   
   # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
@@ -142,7 +142,7 @@ EOZ
   git checkout 1.0.2 
   
   # Change access right in favor of selected user that will run the process.
-  chmod 777 /opt/reaktor 
+  chmod -R $user:$group /opt/reaktor 
   
   # Remove useless notifier plugin to avoid log error.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
@@ -156,10 +156,8 @@ EOZ
   echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> /etc/environment
   source $homedir/.profile
 
-  # Create a master file that contains puppetmaster address hostname.
-  touch /opt/reaktor/masters.txt
-  
   # Currently that script supports only one puppet master in the masters txt file.
+  rm -f /opt/reaktor/masters.txt
   defaultPuppetMaster="puppet"
   read -p "Enter Puppet Master server hostname [$defaultPuppetMaster]: " userPuppetMaster
   userPuppetMaster=${userPuppetMaster:-$defaultPuppetMaster}
