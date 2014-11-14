@@ -210,6 +210,8 @@ script
 end script
 EOZ
 
+  initctl start reaktor
+
   echo -e '\e[01;37;42mReaktor has been installed!\e[0m'
 }
 function foremanRepos()
