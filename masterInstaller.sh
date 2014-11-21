@@ -147,6 +147,9 @@ EOZ
   # Remove useless notifier plugin to avoid log error.
   rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
 
+  # Install Reaktor Ruby requirements
+  bundle install
+
   # Get R10K Puppetfile git repository from R10K config file.
   defaultGitRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
  
@@ -198,7 +201,7 @@ EOZ
   # Create a upstart job to be sure that service is always running.
   rm -f /etc/init/reaktor.conf
   cat << EOZ > /etc/init/reaktor.conf
-start on startup
+start on started redis-server
 stop on starting rcS
 
 chdir /opt/reaktor/
@@ -206,7 +209,7 @@ setuid $user
 setgid $user
 script
   . /etc/environment 
-  /usr/local/bin/rake start  
+  /usr/bin/rake start
 end script
 EOZ
 
