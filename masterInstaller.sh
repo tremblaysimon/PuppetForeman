@@ -209,7 +209,7 @@ setuid $user
 setgid $user
 script
   . /etc/environment 
-  /usr/bin/rake start
+  /usr/local/bin/rake start
 end script
 EOZ
 
