@@ -213,6 +213,23 @@ script
 end script
 EOZ
 
+  # Ask for user realname and email for gituser.
+  defaultGitRealname="Real Name"
+  read -p "Enter R10K Puppetfile git repository user realname [$defaultGitRealname]: " userGitRealname
+  userGitRealname=${userGitRealname:-$defaultGitRealname}
+
+  defaultGitRealname="example@example.com"
+  read -p "Enter R10K Puppetfile git repository user e-mail [$defaultGitMail]: " userGitMail
+  userGitMail=${userGitMail:-$defaultGitMail}
+
+  cat << EOZ > $homedir/.gitconfig
+[user]
+	email = $userGitMail
+	name = $userGitRealname
+EOZ
+
+  chown -R $user:$group $homedir
+
   initctl start reaktor
 
   echo -e '\e[01;37;42mReaktor has been installed!\e[0m'
