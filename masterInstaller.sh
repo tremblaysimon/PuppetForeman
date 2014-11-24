@@ -218,7 +218,7 @@ EOZ
   read -p "Enter R10K Puppetfile git repository user realname [$defaultGitRealname]: " userGitRealname
   userGitRealname=${userGitRealname:-$defaultGitRealname}
 
-  defaultGitRealname="example@example.com"
+  defaultGitMail="example@example.com"
   read -p "Enter R10K Puppetfile git repository user e-mail [$defaultGitMail]: " userGitMail
   userGitMail=${userGitMail:-$defaultGitMail}
 
