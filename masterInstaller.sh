@@ -316,8 +316,10 @@ function runR10K()
   rm -rf /etc/puppet/environment
 
   echo && echo -e '\e[01;34m+++ Running R10K...\e[0m'
-
-  r10k deploy environment -pv
+  # Assuming reaktor user...
+  su reaktor << 'EOF'
+sudo r10k deploy environment -pv
+EOF
 
   echo -e '\e[01;37;42mR10K First Job Finished!\e[0m'
 }
