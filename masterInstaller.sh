@@ -41,7 +41,7 @@ function setHostname()
   if [ -z "$FQDN" ]; then
     FQDN=$(sed -n '/^search \(.*\)$/s//\1/p' /etc/resolv.conf)
   fi
-  echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $FQDN $Hostname puppet" > /etc/hosts
+  echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $Hostname.$FQDN $Hostname puppet" > /etc/hosts
 }
 function installApache()
 {
