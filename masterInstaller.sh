@@ -130,8 +130,8 @@ EOZ
   user="reaktor"
   group=$user
   groupadd $group
-  useradd $user -s /bin/bash -m -g $group 
-  
+  useradd $user -s /bin/bash -m -g $group -G sudo
+
   homedir="$(getent passwd $user | awk -F ':' '{print $6}')"
   
   # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
@@ -207,6 +207,8 @@ stop on starting rcS
 chdir /opt/reaktor/
 setuid $user
 setgid $user
+env HOME=$homedir
+env USER=$user
 script
   . /etc/environment 
   /usr/local/bin/rake start
@@ -228,7 +230,20 @@ EOZ
 	name = $userGitRealname
 EOZ
 
+  # Modify reaktor Capfile to support ssh.
+  sed -i "1s/^/set \:user\, \"$user\"\n/" /opt/reaktor/Capfile
+  sed -i "1s@^@ssh_options\[\:keys\] \= \[\"$homedir\"\]\n@" /opt/reaktor/Capfile
+
+  # Modify reaktor Capfile to add sudo before r10k command.
+  sed -i 's/r10k deploy/sudo r10k deploy/' /opt/reaktor/Capfile
+
   chown -R $user:$group $homedir
+
+  # Add a file to sudo without passwd in /etc/sudoers.d/
+  cat << EOZ > /etc/sudoers.d/reaktor
+# User rules for reaktor
+reaktor ALL=NOPASSWD:/usr/local/bin/r10k
+EOZ
 
   initctl start reaktor
 
@@ -278,6 +293,15 @@ function installForeman()
   echo && echo -e '\e[01;34m+++ Restarting the apache2 service...\e[0m'
   service apache2 restart
   echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
+
+  # Edit /etc/puppet/puppet.conf to support dynamic environments (Foreman modify puppet.conf during installation).
+  sed -i '/\[development\]/d' /etc/puppet/puppet.conf
+  sed -i '/\[production\]/d' /etc/puppet/puppet.conf
+  sed -i '/modulepath/d' /etc/puppet/puppet.conf
+  sed -i '/config_version/d' /etc/puppet/puppet.conf
+
+  echo '   environment = production' >> /etc/puppet/puppet.conf
+  echo '   modulepath  = $confdir/environments/$environment/modules' >> /etc/puppet/puppet.conf 
 }
 function installGit()
 {
@@ -285,6 +309,17 @@ function installGit()
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
   echo -e '\e[01;37;42mGit has been installed (Puppet repos is in /opt/git)!\e[0m'
+}
+function runR10K()
+{
+  # Delete /etc/puppet/environment folder
+  rm -rf /etc/puppet/environment
+
+  echo && echo -e '\e[01;34m+++ Running R10K...\e[0m'
+
+  r10k deploy environment -pv
+
+  echo -e '\e[01;37;42mR10K First Job Finished!\e[0m'
 }
 function doAll()
 {
@@ -330,6 +365,10 @@ function doAll()
   askQuestion "Install The Foreman ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installForeman
+  fi
+  askQuestion "Run R10K for the first time?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    runR10K
   fi
   clear
   farewell=$(cat << EOZ
