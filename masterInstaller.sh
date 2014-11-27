@@ -316,7 +316,7 @@ function installGit()
 function runR10K()
 {
   # Delete /etc/puppet/environment folder
-  rm -rf /etc/puppet/environment
+  rm -rf /etc/puppet/environments
 
   echo && echo -e '\e[01;34m+++ Running R10K...\e[0m'
   # Assuming reaktor user...
