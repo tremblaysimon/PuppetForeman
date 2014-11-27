@@ -235,7 +235,7 @@ EOZ
 
   # Modify reaktor Capfile to support ssh.
   sed -i "1s/^/set \:user\, \"$user\"\n/" /opt/reaktor/Capfile
-  sed -i "1s@^@ssh_options\[\:keys\] \= \[\"$homedir\"\]\n@" /opt/reaktor/Capfile
+  sed -i "1s@^@ssh_options\[\:keys\] \= \[\"$homedir\/.ssh\/id_rsa\"\]\n@" /opt/reaktor/Capfile
 
   # Modify reaktor Capfile to add sudo before r10k command.
   sed -i 's/r10k deploy/sudo r10k deploy/' /opt/reaktor/Capfile
