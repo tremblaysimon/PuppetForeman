@@ -2,7 +2,7 @@
 # Puppet Master Install with The Foreman on Debian variants
 # Revised by: Claude Durocher
 # <https://github.com/clauded>
-# Version 1.5.0
+# Version 1.6.0
 #
 # Fork from this source:
 #  Author: John McCarthy
@@ -38,7 +38,10 @@ function setHostname()
   IP=`hostname -I`
   Hostname=`hostname`
   FQDN=`hostname -f`
-  echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $FQDN $Hostname puppet" > /etc/hosts
+  if [ -z "$FQDN" ]; then
+    FQDN=$(sed -n '/^search \(.*\)$/s//\1/p' /etc/resolv.conf)
+  fi
+  echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $Hostname.$FQDN $Hostname puppet" > /etc/hosts
 }
 function installApache()
 {
@@ -95,7 +98,7 @@ function installr10k()
 EOZ
 
   # User must enter a repository or press enter with nothing to continue.
-  defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' ./r10k.yaml)
+  defaultRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
   read -p "Enter r10k Puppetfile repository [$defaultRepo]: " userRepo
   userRepo=${userRepo:-$defaultRepo}
   echo "r10k Puppetfile repository is $userRepo"
@@ -103,6 +106,151 @@ EOZ
 
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
+}
+function installReaktor()
+{
+  echo && echo -e '\e[01;34m+++ Installing Reaktor...\e[0m'
+
+  # Install Reaktor requirements.
+  apt-get install bundler redis-server -y  
+
+  # Use UpStart for redis-server instead of old SystemV.
+  update-rc.d redis-server disable
+ 
+  rm -f /etc/init/redis-server.conf
+  cat << EOZ > /etc/init/redis-server.conf
+description "redis server"
+
+start on runlevel [23]
+stop on shutdown
+
+exec sudo -u redis /usr/bin/redis-server /etc/redis/redis.conf
+
+respawn
+EOZ
+
+  # Use reaktor as a username/group to run Reaktor processes.
+  user="reaktor"
+  group=$user
+  groupadd $group
+  useradd $user -s /bin/bash -m -g $group -G sudo
+
+  homedir="$(getent passwd $user | awk -F ':' '{print $6}')"
+  
+  # Install Reaktor from GitHub repository (enforcing 1.0.2 version for now).
+  rm -rf /opt/reaktor
+  cd /opt
+  git clone git://github.com/pzim/reaktor
+  cd /opt/reaktor
+  git checkout 1.0.2 
+  
+  # Change access right in favor of selected user that will run the process.
+  chown -R $user:$group /opt/reaktor 
+  
+  # Remove useless notifier plugin to avoid log error.
+  rm -f /opt/reaktor/lib/reaktor/notification/active_notifiers/hipchat.rb
+
+  # Install Reaktor Ruby requirements
+  bundle install
+
+  # Get R10K Puppetfile git repository from R10K config file.
+  defaultGitRepo=$(sed -n '/^\s*remote\s*:\s*\(.*\)$/s//\1/p' /etc/r10k.yaml)
+ 
+  # Export Reaktor environment variables.
+  echo 'export RACK_ROOT="/opt/reaktor"' >> /etc/environment
+  echo "export PUPPETFILE_GIT_URL=\"$defaultGitRepo\"" >> /etc/environment
+  echo 'export REAKTOR_PUPPET_MASTERS_FILE="/opt/reaktor/masters.txt"' >> /etc/environment
+  source $homedir/.profile
+
+  # Currently that script supports only one puppet master in the masters txt file.
+  rm -f /opt/reaktor/masters.txt
+  defaultPuppetMaster="puppet"
+  read -p "Enter Puppet Master server hostname [$defaultPuppetMaster]: " userPuppetMaster
+  userPuppetMaster=${userPuppetMaster:-$defaultPuppetMaster}
+  echo "$userPuppetMaster" >> /opt/reaktor/masters.txt
+
+  # Generate a new ssh key to be able to use capistrano properly. 
+  # Mandatory if Reaktor is on the same machine that runs Puppet Master.  
+  mkdir $homedir/.ssh
+  cd $homedir/.ssh
+
+  ssh-keygen -t rsa -N "" -f id_rsa
+  echo "" >> authorized_keys
+  cat id_rsa.pub >> authorized_keys
+
+  # Ask for username and password to access puppetfile git repo. Store them in .netrc file
+  defaultGitUsername="username"
+  read -p "Enter R10K Puppetfile git repository username [$defaultGitUsername]: " userGitUsername
+  userGitUsername=${userGitUsername:-$defaultGitUsername}
+
+  defaultGitPassword="password"
+  read -p "Enter R10K Puppetfile git repository password [$defaultGitPassword]: " userGitPassword
+  userGitPassword=${userGitPassword:-$defaultGitPassword}
+ 
+  # Assume empty .netrc
+  rm -f $homedir/.netrc
+  touch $homedir/.netrc
+ 
+  defaultGitRepoFQDN=$(echo $defaultGitRepo | awk -F/ '{print $3}')
+
+  echo "machine $defaultGitRepoFQDN" >> $homedir/.netrc
+  echo "login $userGitUsername" >> $homedir/.netrc
+  echo "password $userGitPassword" >> $homedir/.netrc
+
+  # Set the IP Address in Reaktor config file.
+  hostIP=$(ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p')  
+  sed -i 's#^\(\s*address\s*:\s*\).*$#\1'$hostIP'#' /opt/reaktor/reaktor-cfg.yml
+
+  # Create a upstart job to be sure that service is always running.
+  rm -f /etc/init/reaktor.conf
+  cat << EOZ > /etc/init/reaktor.conf
+start on started redis-server
+stop on starting rcS
+
+chdir /opt/reaktor/
+setuid $user
+setgid $user
+env HOME=$homedir
+env USER=$user
+script
+  . /etc/environment 
+  /usr/local/bin/rake start
+end script
+EOZ
+
+  # Ask for user realname and email for gituser.
+  defaultGitRealname="Real Name"
+  read -p "Enter R10K Puppetfile git repository user realname [$defaultGitRealname]: " userGitRealname
+  userGitRealname=${userGitRealname:-$defaultGitRealname}
+
+  defaultGitMail="example@example.com"
+  read -p "Enter R10K Puppetfile git repository user e-mail [$defaultGitMail]: " userGitMail
+  userGitMail=${userGitMail:-$defaultGitMail}
+
+  cat << EOZ > $homedir/.gitconfig
+[user]
+	email = $userGitMail
+	name = $userGitRealname
+EOZ
+
+  # Modify reaktor Capfile to support ssh.
+  sed -i "1s/^/set \:user\, \"$user\"\n/" /opt/reaktor/Capfile
+  sed -i "1s@^@ssh_options\[\:keys\] \= \[\"$homedir\/.ssh\/id_rsa\"\]\n@" /opt/reaktor/Capfile
+
+  # Modify reaktor Capfile to add sudo before r10k command.
+  sed -i 's/r10k deploy/sudo r10k deploy/' /opt/reaktor/Capfile
+
+  chown -R $user:$group $homedir
+
+  # Add a file to sudo without passwd in /etc/sudoers.d/
+  cat << EOZ > /etc/sudoers.d/reaktor
+# User rules for reaktor
+reaktor ALL=NOPASSWD:/usr/local/bin/r10k
+EOZ
+
+  initctl start reaktor
+
+  echo -e '\e[01;37;42mReaktor has been installed!\e[0m'
 }
 function foremanRepos()
 {
@@ -148,6 +296,15 @@ function installForeman()
   echo && echo -e '\e[01;34m+++ Restarting the apache2 service...\e[0m'
   service apache2 restart
   echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
+
+  # Edit /etc/puppet/puppet.conf to support dynamic environments (Foreman modify puppet.conf during installation).
+  sed -i '/\[development\]/d' /etc/puppet/puppet.conf
+  sed -i '/\[production\]/d' /etc/puppet/puppet.conf
+  sed -i '/modulepath/d' /etc/puppet/puppet.conf
+  sed -i '/config_version/d' /etc/puppet/puppet.conf
+
+  echo '   environment = production' >> /etc/puppet/puppet.conf
+  echo '   modulepath  = $confdir/environments/$environment/modules' >> /etc/puppet/puppet.conf 
 }
 function installGit()
 {
@@ -155,6 +312,19 @@ function installGit()
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
   echo -e '\e[01;37;42mGit has been installed (Puppet repos is in /opt/git)!\e[0m'
+}
+function runR10K()
+{
+  # Delete /etc/puppet/environment folder
+  rm -rf /etc/puppet/environments
+
+  echo && echo -e '\e[01;34m+++ Running R10K...\e[0m'
+  # Assuming reaktor user...
+  su reaktor << 'EOF'
+sudo r10k deploy environment -pv
+EOF
+
+  echo -e '\e[01;37;42mR10K First Job Finished!\e[0m'
 }
 function doAll()
 {
@@ -189,6 +359,10 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     installr10k
   fi
+  askQuestion "Install reaktor ?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    installReaktor
+  fi
   askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     foremanRepos $distribution $foreman_version
@@ -196,6 +370,10 @@ function doAll()
   askQuestion "Install The Foreman ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installForeman
+  fi
+  askQuestion "Run R10K for the first time?" $yes_switch
+  if [ "$yesno" = "y" ]; then
+    runR10K
   fi
   clear
   farewell=$(cat << EOZ
