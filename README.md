@@ -1,5 +1,5 @@
 # PuppetForeman #
 
-Script to install the Puppet Master and The Foreman packages on Debian and Ubuntu
+Script to install the Puppet Master, The Foreman and R10k packages on Debian and Ubuntu
 
-Install R10K and Reaktor also.
+A Gitlab webhook example is also included.
