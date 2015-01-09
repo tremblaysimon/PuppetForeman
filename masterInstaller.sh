@@ -86,15 +86,11 @@ function installr10k()
   
   # Create /etc/r10k.yaml file.
   cat << EOZ > /etc/r10k.yaml
-:cachedir: /var/cache/r10k
+:cachedir: '/var/cache/r10k'
 :sources:
   puppet:
-    basedir: /etc/puppet/environments
-    prefix: false
-    remote: https://your.remote.depot/repo-name.git
-
-:purgedirs:
-  - /etc/puppet/environments
+    basedir: '/etc/puppet/environments'
+    remote: 'https://your.remote.depot/repo-name.git'
 EOZ
 
   # User must enter a repository or press enter with nothing to continue.
