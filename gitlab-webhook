@@ -1,0 +1,75 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:   gitlab-webhook
+# Required-Start:    $local_fs $remote_fs $network $syslog $named
+# Required-Stop:     $local_fs $remote_fs $network $syslog $named
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the webhook service
+# Description:       starts webhook service using start-stop-daemon
+### END INIT INFO
+
+DAEMON_DIR=/var/lib/puppet/gitlab-webhook
+DAEMON=$DAEMON_DIR/gitlab-webhook-r10k.py
+NAME=gitlab-webhook
+DESC=gitlab-webhook
+DAEMON_USER="puppet"
+DAEMON_OPTS="-p 8000"
+PIDFILE=/var/run/puppet/$NAME.pid
+
+test -x $DAEMON || exit 0
+
+set -e
+
+. /lib/lsb/init-functions
+
+start() {
+    start-stop-daemon --start --pidfile $PIDFILE  --make-pidfile --user $DAEMON_USER \
+      --retry 5 --background --exec $DAEMON -- $DAEMON_OPTS
+}
+
+stop() {
+    start-stop-daemon --stop --pidfile $PIDFILE \
+      --retry 5 
+}
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting $DESC"
+    start
+    log_end_msg $?
+    ;;
+
+  stop)
+    log_daemon_msg "Stopping $DESC"
+    stop
+    log_end_msg $?
+    ;;
+
+  restart)
+    log_daemon_msg "Restarting $DESC"
+    stop
+    sleep 1
+    start
+    log_end_msg $?
+    ;;
+
+  reload)
+    log_daemon_msg "Reloading $DESC configuration"
+    start-stop-daemon --stop --signal HUP --quiet --pidfile $PIDFILE \
+      --exec $DAEMON
+    log_end_msg $?
+    ;;
+
+  status)
+    status_of_proc -p $PIDFILE "$DAEMON" && exit 0 || exit $?
+    ;;
+
+  *)
+    echo "Usage: $NAME {start|stop|restart|reload|status}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0
