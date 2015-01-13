@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:   gitlab-webhook
+# Provides:          gitlab-webhook
 # Required-Start:    $local_fs $remote_fs $network $syslog $named
 # Required-Stop:     $local_fs $remote_fs $network $syslog $named
 # Default-Start:     2 3 4 5
@@ -10,13 +10,14 @@
 # Description:       starts webhook service using start-stop-daemon
 ### END INIT INFO
 
-DAEMON_DIR=/var/lib/puppet/gitlab-webhook
-DAEMON=$DAEMON_DIR/gitlab-webhook-r10k.py
 NAME=gitlab-webhook
 DESC=gitlab-webhook
+DAEMON_DIR=/var/lib/puppet/gitlab-webhook
+DAEMON=$DAEMON_DIR/gitlab-webhook-r10k.py
 DAEMON_USER="puppet"
 DAEMON_OPTS="-p 8000"
-PIDFILE=/var/run/puppet/$NAME.pid
+PIDDIR=/var/run/puppet
+PIDFILE=$PIDDIR/$NAME.pid
 
 test -x $DAEMON || exit 0
 
@@ -25,6 +26,10 @@ set -e
 . /lib/lsb/init-functions
 
 start() {
+    if [ ! -d $PIDDIR ]; then
+      mkdir $PIDDIR
+      chown $DAEMON_USER:$DAEMON_USER $PIDDIR
+    fi
     start-stop-daemon --start --pidfile $PIDFILE  --make-pidfile --user $DAEMON_USER \
       --retry 5 --background --exec $DAEMON -- $DAEMON_OPTS
 }
