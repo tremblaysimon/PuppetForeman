@@ -323,13 +323,8 @@ function runR10K()
 {
   # Delete /etc/puppet/environment folder
   rm -rf /etc/puppet/environments
-
   echo && echo -e '\e[01;34m+++ Running R10K...\e[0m'
-  # Assuming reaktor user...
-  su reaktor << 'EOF'
-sudo r10k deploy environment -pv
-EOF
-
+  r10k deploy environment -pv
   echo -e '\e[01;37;42mR10K First Job Finished!\e[0m'
 }
 function doAll()
@@ -369,10 +364,10 @@ function doAll()
       installWebhook
     fi
   fi
-  askQuestion "Install reaktor ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    installReaktor
-  fi
+  #askQuestion "Install reaktor ?" $yes_switch
+  #if [ "$yesno" = "y" ]; then
+  #  installReaktor
+  #fi
   askQuestion "Add Foreman Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     foremanRepos $distribution $foreman_version
