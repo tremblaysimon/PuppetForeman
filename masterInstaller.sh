@@ -103,6 +103,16 @@ EOZ
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 }
+function installWebhook()
+{
+  # Install Gitlab's webhook service
+  echo && echo -e '\e[01;34m+++ Installing Gitlab Webhook Service...\e[0m'
+  curl https://github.com/clauded/PuppetForeman/raw/master/gitlab-webhook -o '/etc/init.d/gitlab-webhook'
+  curl https://github.com/clauded/PuppetForeman/raw/master/gitlab-webhook-r10k.py -o '/var/lib/puppet/gitlab-webhook/gitlab-webhook-r10k.py'
+  update-rc.d -f gitlab-webhook defaults
+  /etc/init.d/gitlab-webhook start
+  echo -e '\e[01;37;42mThe Gitlab Webhook Service listening on port 8000!\e[0m'
+}
 function installReaktor()
 {
   echo && echo -e '\e[01;34m+++ Installing Reaktor...\e[0m'
@@ -354,6 +364,10 @@ function doAll()
   askQuestion "Install r10k ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installr10k
+    askQuestion "Install Gitlab webhook service for r10k?" $yes_switch
+    if [ "$yesno" = "y" ]; then
+      installWebhook
+    fi
   fi
   askQuestion "Install reaktor ?" $yes_switch
   if [ "$yesno" = "y" ]; then
