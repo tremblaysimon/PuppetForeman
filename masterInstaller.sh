@@ -107,8 +107,11 @@ function installWebhook()
 {
   # Install Gitlab's webhook service
   echo && echo -e '\e[01;34m+++ Installing Gitlab Webhook Service...\e[0m'
-  curl https://github.com/clauded/PuppetForeman/raw/master/gitlab-webhook -o '/etc/init.d/gitlab-webhook'
-  curl https://github.com/clauded/PuppetForeman/raw/master/gitlab-webhook-r10k.py -o '/var/lib/puppet/gitlab-webhook/gitlab-webhook-r10k.py'
+  curl https://raw.githubusercontent.com/clauded/PuppetForeman/master/gitlab-webhook -o '/etc/init.d/gitlab-webhook'
+  chmod +x /etc/init.d/gitlab-webhook
+  mkdir /var/lib/puppet/gitlab-webhook
+  curl https://raw.githubusercontent.com/clauded/PuppetForeman/master/gitlab-webhook-r10k.py -o '/var/lib/puppet/gitlab-webhook/gitlab-webhook-r10k.py'
+  chmod +x /var/lib/puppet/gitlab-webhook/gitlab-webhook-r10k.py
   update-rc.d -f gitlab-webhook defaults
   /etc/init.d/gitlab-webhook start
   echo -e '\e[01;37;42mThe Gitlab Webhook Service listening on port 8000!\e[0m'
