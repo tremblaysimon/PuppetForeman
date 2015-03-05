@@ -108,8 +108,8 @@ EOZ
   userGitlabDns=${userGitlabDns:-$defaultGitlabDns}
   user="puppet"
   group=$user
-  homedir="$(getent passwd $user | awk -F ':' '{print $6}')" 
-  mkdir $homedir/.ssh
+  homedir="/home/$user" 
+  mkdir -p $homedir/.ssh
   cd $homedir/.ssh
   ssh-keygen -t rsa -N "" -f id_rsa
   ssh-keyscan $userGitlabDns >> known_host
