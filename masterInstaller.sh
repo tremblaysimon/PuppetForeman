@@ -101,6 +101,19 @@ EOZ
   sed -i 's#^\(\s*remote\s*:\s*\).*$#\1'$userRepo'#' /etc/r10k.yaml
 
   echo && echo -e '\e[01;37;42mr10k.yaml file is by default in /etc\e[0m'
+
+  # Generate a new ssh key to be able to connect to remote repository.
+  user="puppet"
+  group=$user
+  homedir="$(getent passwd $user | awk -F ':' '{print $6}')" 
+  mkdir $homedir/.ssh
+  cd $homedir/.ssh
+  ssh-keygen -t rsa -N "" -f id_rsa
+  echo "" >> authorized_keys
+  cat id_rsa.pub >> authorized_keys
+  chown -R $user. $homedir/.ssh
+  chmod 600 $homedir/.ssh/*
+  echo && echo -e '\e[01;37;42mSSH key for repository generated in $homedir/.ssh/id_rsa.pub\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 }
 function installWebhook()
