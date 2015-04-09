@@ -12,7 +12,7 @@
 #
 ######## FUNCTIONS ########
 #
-function usage() 
+function usage()
 {
   echo -e "\nUsage:\n$0 distribution foreman_version [-y] \n"
   echo -e "  distribution : wheeezy, trusty, etc"
@@ -84,7 +84,7 @@ function installr10k()
   echo -e '\e[01;37;42mr10k has been installed!\e[0m'
 
   echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
-  
+
   # Create /etc/r10k.yaml file.
   cat << EOZ > /etc/r10k.yaml
 :cachedir: '/var/cache/r10k'
@@ -107,16 +107,16 @@ EOZ
   defaultGitlabDns="gitlab.local"
   read -p "Enter Gitlab server fqdn [$defaultGitlabDns]: " userGitlabDns
   userGitlabDns=${userGitlabDns:-$defaultGitlabDns}
-  user="puppet"
+  user="root"
   group=$user
-  homedir="/home/$user" 
+  homedir="/$user"
   mkdir -p $homedir/.ssh
   cd $homedir/.ssh
   ssh-keygen -t rsa -N "" -f id_rsa
   ssh-keyscan $userGitlabDns >> known_host
   chown -R $user. $homedir/.ssh
   chmod 600 $homedir/.ssh/*
-  echo && echo -e '\e[01;37;42mSSH key for repository generated in $homedir/.ssh/id_rsa.pub\e[0m'
+  echo && echo -e '\e[01;37;42mSSH key for repository generated in ${homedir}/.ssh/id_rsa.pub\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
 }
 function installWebhook()
@@ -184,7 +184,7 @@ function installForeman()
   sed -i '/config_version/d' /etc/puppet/puppet.conf
 
   echo '   environment = production' >> /etc/puppet/puppet.conf
-  echo '   modulepath  = $confdir/environments/$environment/modules' >> /etc/puppet/puppet.conf 
+  echo '   modulepath  = $confdir/environments/$environment/modules' >> /etc/puppet/puppet.conf
 }
 function installGit()
 {
@@ -267,14 +267,14 @@ EOZ
 if [[ ( $# == "--help") ||  $# == "-h" ]]; then
   usage && exit 0
 fi
-# check number of arguments 
-if [  $# -lt 2 ]; then 
+# check number of arguments
+if [  $# -lt 2 ]; then
   usage && exit 1
-fi 
-# check if the script is run as root user 
-if [[ $USER != "root" ]]; then 
+fi
+# check if the script is run as root user
+if [[ $USER != "root" ]]; then
   echo "This script must be run as root!" && exit 1
-fi 
+fi
 #
 distribution=$1
 foreman_version=$2
