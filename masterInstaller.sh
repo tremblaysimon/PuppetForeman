@@ -109,12 +109,12 @@ EOZ
   userGitlabDns=${userGitlabDns:-$defaultGitlabDns}
   user="root"
   group=$user
-  homedir="/$user"
+  homedir="/root"
   mkdir -p $homedir/.ssh
   cd $homedir/.ssh
   ssh-keygen -t rsa -N "" -f id_rsa
-  ssh-keyscan $userGitlabDns >> known_host
-  chown -R $user. $homedir/.ssh
+  ssh-keyscan $userGitlabDns >> known_hosts
+  chown -R $user. $homedir
   chmod 600 $homedir/.ssh/*
   echo && echo -e '\e[01;37;42mSSH key for repository generated in ${homedir}/.ssh/id_rsa.pub\e[0m'
   echo -e '\e[01;37;42mr10k has been configured!\e[0m'
@@ -126,6 +126,7 @@ function installWebhook()
   curl https://raw.githubusercontent.com/clauded/PuppetForeman/master/gitlab-webhook -o '/etc/init.d/gitlab-webhook'
   chmod +x /etc/init.d/gitlab-webhook
   mkdir /var/lib/puppet/gitlab-webhook
+  apt-get install -y curl
   curl https://raw.githubusercontent.com/clauded/PuppetForeman/master/gitlab-webhook-r10k.py -o '/var/lib/puppet/gitlab-webhook/gitlab-webhook-r10k.py'
   chmod +x /var/lib/puppet/gitlab-webhook/gitlab-webhook-r10k.py
   update-rc.d -f gitlab-webhook defaults
