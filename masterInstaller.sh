@@ -186,6 +186,10 @@ function installForeman()
 
   echo '   environment = production' >> /etc/puppet/puppet.conf
   echo '   modulepath  = $confdir/environments/$environment/modules' >> /etc/puppet/puppet.conf
+
+  # fix 'invalid byte sequence in US-ASCII' on clients
+  echo 'Encoding.default_external = Encoding::UTF_8' >> /etc/puppet/rack/config.ru
+  echo 'Encoding.default_internal = Encoding::UTF_8' >> /etc/puppet/rack/config.ru
 }
 function installGit()
 {
