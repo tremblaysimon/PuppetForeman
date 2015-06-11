@@ -47,7 +47,7 @@ import logging
 import logging.handlers
 
 command         = '/usr/local/bin/r10k deploy environment -pv'
-logger_file     = '/var/log/puppet/gitlab-webhook-r10k-deployer.log'
+logger_file     = '/var/log/gitlab-webhook-r10k-deployer.log'
 logger_max_size = 25165824         # 24 MB
 logger_level    = logging.DEBUG    # DEBUG is quite verbose
 logger          = logging.getLogger('gitlab-webhook-r10k-deployer')
