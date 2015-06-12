@@ -85,8 +85,9 @@ function installr10k()
 
   echo && echo -e '\e[01;34m+++ Configuring r10k...\e[0m'
 
-  # Create /etc/r10k.yaml file.
-  cat << EOZ > /etc/r10k.yaml
+  # Create r10k.yaml file
+  mkdir -p /etc/puppetlabs/r10k
+  cat << EOZ > /etc/puppetlabs/r10k/r10k.yaml
 :cachedir: '/var/cache/r10k'
 :sources:
   puppet:
