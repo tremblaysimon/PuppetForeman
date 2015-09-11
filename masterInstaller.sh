@@ -16,7 +16,7 @@ function usage()
 {
   echo -e "\nUsage:\n$0 distribution foreman_version [-y] \n"
   echo -e "  distribution : wheeezy, trusty, etc"
-  echo -e "  foreman_version : 1.4, 1.5, etc"
+  echo -e "  foreman_version : 1.8, 1.9, etc"
   echo -e "  -y : don't ask for confirmation"
 }
 function askQuestion()
@@ -37,45 +37,20 @@ function setHostname()
   # Edits the /etc/hosts file
   IP=$(hostname -I)
   Hostname=$(hostname)
-  FQDN=$(hostname -f)
-  if [ -z "$FQDN" ]; then
-    DN=$(sed -n '/^search \(.*\)$/s//\1/p' /etc/resolv.conf)
-    FQDN=$Hostname.$DN
-  fi
-  echo -e "127.0.0.1 localhost localhosts.localdomain $FQDN\n$IP $FQDN $Hostname puppet" > /etc/hosts
-}
-function installApache()
-{
-  # Installs Apache
-  echo && echo -e '\e[01;34m+++ Installing Apache...\e[0m'
-  apt-get install apache2 -y
-  # fix utf8 encoding in apache2
-  #sed -i 's/export LANG=C/export LANG=C.UTF-8/' /etc/apache2/envvars
-  echo -e '\e[01;37;42mThe Apache has been installed!\e[0m'
+  DN=$(sed -n '/^search \(.*\)$/s//\1/p' /etc/resolv.conf)
+  FQDN=$Hostname.$DN
+  echo -e "127.0.0.1 localhost\n$IP $FQDN $Hostname puppet" > /etc/hosts
 }
 function puppetRepos()
 {
   # Gets the latest puppet repos
   distribution=$1
   echo && echo -e '\e[01;34m+++ Getting Puppet repositories for $distribution...\e[0m'
+  apt-get -y install ca-certificates
   wget http://apt.puppetlabs.com/puppetlabs-release-$distribution.deb
   dpkg -i puppetlabs-release-$distribution.deb
   apt-get update
   echo -e '\e[01;37;42mThe Latest Puppet Repos have been added!\e[0m'
-}
-function installPuppet()
-{
-  # Installs puppetmaster
-  echo && echo -e '\e[01;34m+++ Installing Puppet Master...\e[0m'
-  apt-get install puppetmaster -y
-  echo -e '\e[01;37;42mThe Puppet Master has been installed!\e[0m'
-}
-function enablePuppet()
-{
-  # Enables the puppetmaster service to be set to ensure it is running
-  echo && echo -e '\e[01;34m+++ Enabling Puppet Master Service...\e[0m'
-  puppet resource service puppetmaster ensure=running enable=true
-  echo -e '\e[01;37;42mThe Puppet Master Service has been initiated!\e[0m'
 }
 function installr10k()
 {
@@ -164,36 +139,15 @@ function installForeman()
   echo -e '\e[97mWe\e[0m'
   sleep .5
   echo -e '\e[01;97;42mG O ! ! ! !\e[0m'
-  foreman-installer -i -v
-  # Sets foreman and foreman-proxy services to start on boot
-  sed -i 's/START=no/START=yes/g' /etc/default/foreman
-  echo "START=yes" >> /etc/default/foreman-proxy
-  # Sets it so you the puppetmaster and puppet services starts on boot
-  sed -i 's/START=no/START=yes/g' /etc/default/puppet
-  # Restarts the foreman and foreman-proxy services
-  service foreman restart
-  service foreman-proxy restart
+  foreman-installer
   echo -e '\e[01;37;42mThe Foreman has been installed!\e[0m'
-  # Restarts the apache2 service
-  echo && echo -e '\e[01;34m+++ Restarting the apache2 service...\e[0m'
-  service apache2 restart
-  echo -e '\e[01;37;42mThe apache2 service has been restarted!\e[0m'
-
-  # Edit /etc/puppet/puppet.conf to support dynamic environments (Foreman modify puppet.conf during installation).
-  sed -i '/\[development\]/d' /etc/puppet/puppet.conf
-  sed -i '/\[production\]/d' /etc/puppet/puppet.conf
-  sed -i '/modulepath/d' /etc/puppet/puppet.conf
-  sed -i '/config_version/d' /etc/puppet/puppet.conf
-
-  echo '   environment = production' >> /etc/puppet/puppet.conf
-  echo '   modulepath  = $confdir/environments/$environment/modules' >> /etc/puppet/puppet.conf
 }
 function installGit()
 {
   # Installs Git
   echo && echo -e '\e[01;34m+++ Installing Git...\e[0m'
   apt-get install git -y
-  echo -e '\e[01;37;42mGit has been installed (Puppet repos is in /opt/git)!\e[0m'
+  echo -e '\e[01;37;42mGit has been installed!\e[0m'
 }
 function runR10K()
 {
@@ -212,21 +166,9 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     setHostname
   fi
-  askQuestion "Install Apache" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    installApache
-  fi
   askQuestion "Add Latest Puppet Repos ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     puppetRepos $distribution
-  fi
-  askQuestion "Install Puppet Master ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    installPuppet
-  fi
-  askQuestion "Enable Puppet Master Service ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    enablePuppet
   fi
   askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
@@ -235,7 +177,7 @@ function doAll()
   askQuestion "Install r10k ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installr10k
-    askQuestion "Install Gitlab webhook service for r10k?" $yes_switch
+    askQuestion "Install Gitlab webhook service for r10k ?" $yes_switch
     if [ "$yesno" = "y" ]; then
       installWebhook
     fi
