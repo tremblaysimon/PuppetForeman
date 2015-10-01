@@ -41,17 +41,7 @@ function setHostname()
   FQDN=$Hostname.$DN
   echo -e "127.0.0.1 localhost\n$IP $FQDN $Hostname puppet" > /etc/hosts
 }
-function puppetRepos()
-{
-  # Gets the latest puppet repos
-  distribution=$1
-  echo && echo -e '\e[01;34m+++ Getting Puppet repositories for $distribution...\e[0m'
-  apt-get -y install ca-certificates
-  wget http://apt.puppetlabs.com/puppetlabs-release-$distribution.deb
-  dpkg -i puppetlabs-release-$distribution.deb
-  apt-get update
-  echo -e '\e[01;37;42mThe Latest Puppet Repos have been added!\e[0m'
-}
+
 function installr10k()
 {
   echo && echo -e '\e[01;34m+++ Installing r10k...\e[0m'
@@ -166,10 +156,7 @@ function doAll()
   if [ "$yesno" = "y" ]; then
     setHostname
   fi
-  askQuestion "Add Latest Puppet Repos ?" $yes_switch
-  if [ "$yesno" = "y" ]; then
-    puppetRepos $distribution
-  fi
+
   askQuestion "Install Git ?" $yes_switch
   if [ "$yesno" = "y" ]; then
     installGit
