@@ -104,7 +104,7 @@ function foremanRepos()
   # Gets the latest foreman repos
   distribution=$1
   foreman_version=$2
-  echo && echo -e '\e[01;34m+++ Getting Foreman $foreman_version repositories for $distribution...\e[0m'
+  echo && echo -e "\e[01;34m+++ Getting Foreman $foreman_version repositories for $distribution...\e[0m"
   echo "deb http://deb.theforeman.org/ $distribution $foreman_version" > /etc/apt/sources.list.d/foreman.list
   echo "deb http://deb.theforeman.org/ plugins $foreman_version" >> /etc/apt/sources.list.d/foreman.list
   wget -q http://deb.theforeman.org/pubkey.gpg -O- | apt-key add -
